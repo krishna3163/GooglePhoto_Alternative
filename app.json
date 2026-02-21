@@ -1,0 +1,24 @@
+{
+    "expo": {
+        "name": "gphoton",
+        "slug": "gphoton",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "userInterfaceStyle": "automatic",
+        "ios": {
+            "supportsTablet": true
+        },
+        "android": {},
+        "web": {
+            "output": "static",
+            "bundler": "metro"
+        },
+        "plugins": [
+            "expo-router"
+        ],
+        "scheme": "gphoton",
+        "experiments": {
+            "typedRoutes": true
+        }
+    }
+}
