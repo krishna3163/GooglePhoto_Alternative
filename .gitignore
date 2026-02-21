@@ -6,8 +6,15 @@ expo-env.d.ts
 # @end expo-cli
 node_modules
 .expo/
-android/
-ios/
+# android/
+# ios/
+android/.gradle
+android/build
+android/app/build
+android/local.properties
+android/GeneratedPluginRegistrant.java
+android/*.keystore
+!android/app/debug.keystore
 *.jks
 *.p12
 *.key
