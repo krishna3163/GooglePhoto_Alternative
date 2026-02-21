@@ -47,7 +47,8 @@ export default function FileViewerScreen() {
         try {
             if (!telegramFileId) return;
             const url = await getFileDownloadUrl(telegramFileId);
-            const localUri = FileSystem.documentDirectory + fileName;
+            const fallbackName = fileName || `file_${telegramFileId.substring(0, 8)}`;
+            const localUri = FileSystem.documentDirectory + fallbackName;
             const downloadRes = await FileSystem.downloadAsync(url, localUri);
             if (downloadRes.status === 200) {
                 if (await Sharing.isAvailableAsync()) {

@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, useColorScheme, ActivityIndicator, TextInput, Modal } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, useColorScheme, ActivityIndicator, TextInput, Modal, useWindowDimensions } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { getUploadedFiles, createFolder, getFolders, addFileToFolder, getFilesByFolder, saveUploadedFile } from '../database/db';
-import { Folder, Video, FileText, Image as ImageIcon, Plus, MoreVertical, Search, Download, Trash2, FolderPlus } from 'lucide-react-native';
+import { Folder, Video, FileText, Plus, Search, FolderPlus } from 'lucide-react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { uploadFileToTelegram } from '../services/telegramService';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import { getFileDownloadUrl } from '../services/telegramService';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CloudDriveScreen() {
+    const { width } = useWindowDimensions();
     const colorScheme = useColorScheme();
     const theme = Colors[colorScheme ?? 'light'];
     const router = useRouter();
@@ -18,13 +20,15 @@ export default function CloudDriveScreen() {
     const [files, setFiles] = useState<any[]>([]);
     const [folders, setFolders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [currentFolder, setCurrentFolder] = useState<number | null>(null);
     const [filter, setFilter] = useState<'all' | 'image' | 'video' | 'document'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [newFolderModalVisible, setNewFolderModalVisible] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
+
+    // Dynamic grid layout
+    const numColumns = width > 1000 ? 6 : width > 700 ? 4 : 2;
 
     useEffect(() => {
         loadContent();
@@ -36,7 +40,7 @@ export default function CloudDriveScreen() {
             if (currentFolder) {
                 const folderFiles = await getFilesByFolder(currentFolder);
                 setFiles(folderFiles);
-                setFolders([]); // Don't show nested folders for simplicity in this version
+                setFolders([]);
             } else {
                 const allFiles = await getUploadedFiles(filter);
                 setFiles(allFiles);
@@ -80,7 +84,8 @@ export default function CloudDriveScreen() {
     const handleDownload = async (file: any) => {
         try {
             const downloadUrl = await getFileDownloadUrl(file.telegramFileId);
-            const localUri = FileSystem.documentDirectory + file.fileName;
+            const fileName = file.fileName || `file_${file.telegramFileId.substring(0, 8)}`;
+            const localUri = FileSystem.documentDirectory + fileName;
 
             const downloadRes = await FileSystem.downloadAsync(downloadUrl, localUri);
 
@@ -98,7 +103,6 @@ export default function CloudDriveScreen() {
     };
 
     const handleOpenFile = (item: any) => {
-        // Need to stringify params if complex or just pass IDs
         router.push({
             pathname: '/file-viewer',
             params: {
@@ -114,7 +118,7 @@ export default function CloudDriveScreen() {
         const isImage = item.mediaType === 'image';
         return (
             <TouchableOpacity
-                style={[styles.fileCard, { backgroundColor: theme.card }]}
+                style={[styles.fileCard, { backgroundColor: theme.card, maxWidth: `${100 / numColumns - 2}%` }]}
                 onPress={() => handleOpenFile(item)}
                 onLongPress={() => handleDownload(item)}
             >
@@ -135,26 +139,28 @@ export default function CloudDriveScreen() {
 
     const renderFolderItem = ({ item }: { item: any }) => (
         <TouchableOpacity
-            style={[styles.folderCard, { backgroundColor: theme.card }]}
+            style={[styles.folderCard, { backgroundColor: theme.card, maxWidth: `${100 / numColumns - 2}%` }]}
             onPress={() => setCurrentFolder(item.id)}
         >
-            <Folder color={theme.tint} size={40} />
-            <Text style={[styles.folderName, { color: theme.text }]}>{item.name}</Text>
+            <Folder color={theme.tint} size={width > 700 ? 48 : 40} />
+            <Text style={[styles.folderName, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
         </TouchableOpacity>
     );
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
             {/* Header */}
             <View style={styles.header}>
-                {currentFolder ? (
-                    <TouchableOpacity onPress={() => setCurrentFolder(null)}>
-                        <Text style={[styles.backText, { color: theme.tint }]}>&lt; Back</Text>
-                    </TouchableOpacity>
-                ) : (
-                    <Text style={[styles.title, { color: theme.text }]}>Cloud Drive</Text>
-                )}
-                <View style={styles.searchContainer}>
+                <View style={styles.titleRow}>
+                    {currentFolder ? (
+                        <TouchableOpacity onPress={() => setCurrentFolder(null)} style={styles.backButton}>
+                            <Text style={[styles.backText, { color: theme.tint }]}>&lt; Home</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <Text style={[styles.title, { color: theme.text }]}>Cloud Drive</Text>
+                    )}
+                </View>
+                <View style={[styles.searchContainer, { backgroundColor: theme.card }]}>
                     <Search color={theme.textSecondary} size={20} />
                     <TextInput
                         placeholder="Search files"
@@ -167,27 +173,36 @@ export default function CloudDriveScreen() {
             </View>
 
             {/* Filters */}
-            <View style={styles.filters}>
-                {['all', 'image', 'video', 'document'].map(f => (
-                    <TouchableOpacity
-                        key={f}
-                        style={[styles.filterChip, filter === f && { backgroundColor: theme.tint }]}
-                        onPress={() => setFilter(f as any)}
-                    >
-                        <Text style={[styles.filterText, filter === f && { color: '#fff' }]}>{f.charAt(0).toUpperCase() + f.slice(1)}</Text>
-                    </TouchableOpacity>
-                ))}
+            <View style={styles.filtersWrapper}>
+                <FlatList
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    data={['all', 'image', 'video', 'document']}
+                    renderItem={({ item: f }) => (
+                        <TouchableOpacity
+                            key={f}
+                            style={[styles.filterChip, filter === f && { backgroundColor: theme.tint }, { backgroundColor: filter === f ? theme.tint : theme.card }]}
+                            onPress={() => setFilter(f as any)}
+                        >
+                            <Text style={[styles.filterText, { color: filter === f ? '#fff' : theme.textSecondary }]}>{f.charAt(0).toUpperCase() + f.slice(1)}</Text>
+                        </TouchableOpacity>
+                    )}
+                    contentContainerStyle={styles.filters}
+                />
             </View>
 
             {/* Content */}
             {loading ? (
-                <ActivityIndicator style={{ marginTop: 20 }} color={theme.tint} />
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={theme.tint} />
+                </View>
             ) : (
                 <FlatList
+                    key={numColumns}
                     data={[...folders, ...files]}
                     keyExtractor={(item, index) => (item.fileUri ? 'file-' : 'folder-') + item.id + index}
                     renderItem={({ item }) => item.fileUri ? renderFileItem({ item }) : renderFolderItem({ item })}
-                    numColumns={2}
+                    numColumns={numColumns}
                     contentContainerStyle={styles.grid}
                     columnWrapperStyle={styles.columnWrapper}
                 />
@@ -208,7 +223,10 @@ export default function CloudDriveScreen() {
                         <FileText color={theme.text} size={20} />
                         <Text style={[styles.menuText, { color: theme.text }]}>Upload Document</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.menuItem} onPress={() => setNewFolderModalVisible(true)}>
+                    <TouchableOpacity style={styles.menuItem} onPress={() => {
+                        setNewFolderModalVisible(true);
+                        setIsMenuVisible(false);
+                    }}>
                         <FolderPlus color={theme.text} size={20} />
                         <Text style={[styles.menuText, { color: theme.text }]}>New Folder</Text>
                     </TouchableOpacity>
@@ -226,6 +244,7 @@ export default function CloudDriveScreen() {
                             value={newFolderName}
                             onChangeText={setNewFolderName}
                             placeholderTextColor={theme.textSecondary}
+                            autoFocus
                         />
                         <View style={styles.modalButtons}>
                             <TouchableOpacity onPress={() => setNewFolderModalVisible(false)}>
@@ -238,8 +257,7 @@ export default function CloudDriveScreen() {
                     </View>
                 </View>
             </Modal>
-
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -250,160 +268,201 @@ const styles = StyleSheet.create({
     header: {
         padding: 16,
     },
+    titleRow: {
+        height: 40,
+        justifyContent: 'center',
+        marginBottom: 8,
+    },
     title: {
-        fontSize: 24,
+        fontSize: 28,
         fontWeight: 'bold',
-        marginBottom: 12,
+    },
+    backButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     backText: {
         fontSize: 18,
-        marginBottom: 12,
+        fontWeight: '600',
     },
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.05)',
         borderRadius: 12,
         paddingHorizontal: 12,
-        height: 44,
+        height: 48,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
     },
     searchInput: {
         flex: 1,
-        marginLeft: 8,
+        marginLeft: 12,
         fontSize: 16,
     },
+    filtersWrapper: {
+        marginBottom: 8,
+    },
     filters: {
-        flexDirection: 'row',
         paddingHorizontal: 16,
-        marginBottom: 12,
         gap: 8,
     },
     filterChip: {
-        paddingHorizontal: 16,
+        paddingHorizontal: 20,
         paddingVertical: 8,
         borderRadius: 20,
-        backgroundColor: 'rgba(0,0,0,0.05)',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
     },
     filterText: {
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '600',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     grid: {
         padding: 16,
+        paddingBottom: 100,
     },
     columnWrapper: {
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
+        gap: 16,
     },
     folderCard: {
-        width: '48%',
+        flex: 1,
         padding: 16,
-        borderRadius: 12,
+        borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 16,
-        aspectRatio: 1.2,
+        aspectRatio: 1,
         gap: 8,
+        elevation: 3,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
     },
     folderName: {
-        fontWeight: '600',
+        fontWeight: '700',
         textAlign: 'center',
+        fontSize: 14,
     },
     fileCard: {
-        width: '48%',
-        borderRadius: 12,
+        flex: 1,
+        borderRadius: 16,
         marginBottom: 16,
         overflow: 'hidden',
+        elevation: 3,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
     },
     thumbnail: {
         width: '100%',
-        height: 120,
+        height: 140,
         resizeMode: 'cover',
     },
     iconPlaceholder: {
         width: '100%',
-        height: 120,
+        height: 140,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(0,0,0,0.05)',
+        backgroundColor: 'rgba(0,0,0,0.03)',
     },
     fileInfo: {
-        padding: 8,
+        padding: 12,
     },
     fileName: {
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '600',
     },
     fileDate: {
         fontSize: 12,
-        marginTop: 2,
+        marginTop: 4,
     },
     fab: {
         position: 'absolute',
-        right: 20,
-        bottom: 20,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
+        right: 24,
+        bottom: 24,
+        width: 64,
+        height: 64,
+        borderRadius: 32,
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4.65,
-        elevation: 8,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
+        elevation: 10,
     },
     menu: {
         position: 'absolute',
-        right: 20,
-        bottom: 90,
-        borderRadius: 12,
+        right: 24,
+        bottom: 100,
+        borderRadius: 20,
         padding: 8,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-        minWidth: 180,
+        shadowRadius: 10,
+        elevation: 12,
+        minWidth: 200,
     },
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 12,
+        padding: 16,
         gap: 12,
     },
     menuText: {
         fontSize: 16,
-        fontWeight: '500',
+        fontWeight: '600',
     },
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0,0,0,0.4)',
         alignItems: 'center',
         justifyContent: 'center',
     },
     modalContent: {
-        width: '80%',
+        width: '85%',
         padding: 24,
-        borderRadius: 16,
+        borderRadius: 20,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 20,
     },
     modalTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 16,
+        marginBottom: 20,
     },
     folderInput: {
-        borderWidth: 1,
-        borderRadius: 8,
-        padding: 12,
+        borderWidth: 1.5,
+        borderRadius: 12,
+        padding: 14,
         marginBottom: 24,
+        fontSize: 16,
     },
     modalButtons: {
         flexDirection: 'row',
         justifyContent: 'flex-end',
-        gap: 24,
+        gap: 32,
     },
     modalButton: {
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '700',
     },
 });

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { initDatabase } from '../database/db';
 import { registerBackgroundSync } from '../services/backgroundSync';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
@@ -50,12 +51,14 @@ export default function RootLayout() {
     }
 
     return (
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <StatusBar style="auto" />
-            <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="settings" options={{ title: 'Settings', presentation: 'modal' }} />
-            </Stack>
-        </ThemeProvider>
+        <SafeAreaProvider>
+            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                <StatusBar style="auto" />
+                <Stack>
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                    <Stack.Screen name="settings" options={{ title: 'Settings', presentation: 'modal' }} />
+                </Stack>
+            </ThemeProvider>
+        </SafeAreaProvider>
     );
 }

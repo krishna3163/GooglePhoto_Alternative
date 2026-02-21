@@ -1,22 +1,26 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import { SectionList, Image, View, Text, StyleSheet, Dimensions, useColorScheme, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { Image, View, Text, StyleSheet, useColorScheme, TouchableOpacity, ActivityIndicator, Alert, useWindowDimensions } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { StatusBar } from 'expo-status-bar';
 import { initDatabase, getUploadedCount, isImageUploaded, markImageUploaded } from '../../database/db';
 import { syncNewImages } from '../../services/syncService';
 import { uploadFileToTelegram } from '../../services/telegramService';
-import { RefreshCw, Cloud } from 'lucide-react-native';
+import { RefreshCw } from 'lucide-react-native';
 import * as MediaLibrary from 'expo-media-library';
 import { useFocusEffect } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { SectionList } from 'react-native';
 
-const { width } = Dimensions.get('window');
-const COLUMN_COUNT = 3;
 const SPACING = 4;
-const ITEM_SIZE = (width - (COLUMN_COUNT + 1) * SPACING) / COLUMN_COUNT;
 
 export default function GalleryScreen() {
+    const { width } = useWindowDimensions();
     const colorScheme = useColorScheme();
     const theme = Colors[colorScheme ?? 'light'];
+
+    // Dynamic columns based on screen width
+    const COLUMN_COUNT = width > 1000 ? 7 : width > 700 ? 5 : 3;
+    const ITEM_SIZE = (width - (COLUMN_COUNT + 1) * SPACING) / COLUMN_COUNT;
 
     const [photos, setPhotos] = useState<any[]>([]);
     const [uploadedCount, setUploadedCount] = useState(0);
@@ -24,7 +28,6 @@ export default function GalleryScreen() {
     const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
     const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set());
 
-    // Initialize DB and load photos on mount
     useEffect(() => {
         initDatabase().then(() => {
             loadStats();
@@ -48,12 +51,11 @@ export default function GalleryScreen() {
         if (!permission.granted) return;
 
         const assets = await MediaLibrary.getAssetsAsync({
-            first: 100, // Load 100 recent photos for demo
+            first: 100,
             mediaType: MediaLibrary.MediaType.photo,
             sortBy: [MediaLibrary.SortBy.creationTime],
         });
 
-        // Group by date
         const grouped = assets.assets.reduce((acc: any, asset) => {
             const date = new Date(asset.creationTime).toDateString();
             if (!acc[date]) {
@@ -127,21 +129,20 @@ export default function GalleryScreen() {
                 data: rows,
             };
         });
-    }, [photos]);
+    }, [photos, COLUMN_COUNT]);
 
     const renderSectionHeader = ({ section }: { section: { title: string } }) => {
-        const { title } = section;
         return (
-        <View style={[styles.headerContainer, { backgroundColor: theme.background }]}>
-            <Text style={[styles.header, { color: theme.text }]}>{title}</Text>
-        </View>
+            <View style={[styles.headerContainer, { backgroundColor: theme.background }]}>
+                <Text style={[styles.header, { color: theme.text }]}>{section.title}</Text>
+            </View>
         );
     };
 
     const renderItem = ({ item }: { item: any }) => {
         return (
             <View style={styles.row}>
-                {item.items.map((photo: any, index: number) => {
+                {item.items.map((photo: any) => {
                     const isUploading = uploadingImages.has(photo.uri);
                     return (
                         <TouchableOpacity
@@ -153,6 +154,8 @@ export default function GalleryScreen() {
                                 {
                                     backgroundColor: theme.card,
                                     marginLeft: SPACING,
+                                    width: ITEM_SIZE,
+                                    height: ITEM_SIZE,
                                 }
                             ]}
                         >
@@ -170,17 +173,17 @@ export default function GalleryScreen() {
                     );
                 })}
                 {Array.from({ length: COLUMN_COUNT - item.items.length }).map((_, i) => (
-                    <View key={`empty-${i}`} style={[styles.imageContainer, { marginLeft: SPACING, backgroundColor: 'transparent', elevation: 0, shadowOpacity: 0 }]} />
+                    <View key={`empty-${i}`} style={[styles.imageContainer, { marginLeft: SPACING, backgroundColor: 'transparent', width: ITEM_SIZE, height: ITEM_SIZE }]} />
                 ))}
             </View>
         );
     };
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
-            {/* Sync Status Card */}
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
+            <StatusBar style="auto" />
             <View style={[styles.syncCard, { backgroundColor: theme.card }]}>
-                <View>
+                <View style={{ flex: 1 }}>
                     <Text style={[styles.syncTitle, { color: theme.text }]}>Backup Status</Text>
                     <Text style={[styles.syncSubtitle, { color: theme.textSecondary }]}>
                         {uploadedCount} items backed up
@@ -213,7 +216,7 @@ export default function GalleryScreen() {
                 contentContainerStyle={{ paddingBottom: 20, paddingRight: SPACING }}
                 showsVerticalScrollIndicator={false}
             />
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -227,16 +230,16 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         margin: 16,
         padding: 16,
-        borderRadius: 12,
+        borderRadius: 16,
+        elevation: 4,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowRadius: 8,
     },
     syncTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontSize: 18,
+        fontWeight: '700',
     },
     syncSubtitle: {
         fontSize: 14,
@@ -248,36 +251,27 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
     },
     syncButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
+        width: 48,
+        height: 48,
+        borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
     },
     headerContainer: {
         paddingVertical: 12,
         paddingHorizontal: 16,
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        borderColor: 'transparent',
     },
     header: {
         fontSize: 16,
-        fontWeight: '700',
+        fontWeight: 'bold',
     },
     row: {
         flexDirection: 'row',
         marginBottom: SPACING,
     },
     imageContainer: {
-        width: ITEM_SIZE,
-        height: ITEM_SIZE,
         borderRadius: 12,
         overflow: 'hidden',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
     },
     image: {
         width: '100%',

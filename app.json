@@ -3,12 +3,14 @@
         "name": "gphoton",
         "slug": "gphoton",
         "version": "1.0.0",
-        "orientation": "portrait",
+        "orientation": "default",
         "userInterfaceStyle": "automatic",
         "ios": {
             "supportsTablet": true
         },
-        "android": {},
+        "android": {
+            "package": "com.krishna3163.gphoton"
+        },
         "web": {
             "output": "static",
             "bundler": "metro"

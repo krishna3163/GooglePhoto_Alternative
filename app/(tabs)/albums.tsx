@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, useColorScheme, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, useColorScheme, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { getDeviceAlbums } from '../../services/albumService';
 import { Folder } from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AlbumsScreen() {
+    const { width } = useWindowDimensions();
     const colorScheme = useColorScheme();
     const theme = Colors[colorScheme ?? 'light'];
 
     const [albums, setAlbums] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const numColumns = width > 1000 ? 5 : width > 700 ? 4 : 2;
 
     useEffect(() => {
         loadAlbums();
@@ -22,36 +26,35 @@ export default function AlbumsScreen() {
     };
 
     const renderItem = ({ item }: { item: any }) => (
-        <TouchableOpacity style={[styles.card, { backgroundColor: theme.card }]}>
+        <TouchableOpacity style={[styles.card, { backgroundColor: theme.card, maxWidth: `${100 / numColumns - 4}%` }]}>
             <View style={styles.cover}>
-                {/* Expo Media Library doesn't give a cover URL directly easily without fetching assets. 
-              We'll use a placeholder folder icon for now to keep it fast. */}
                 <Folder size={48} color={theme.textSecondary} />
             </View>
             <View style={styles.info}>
                 <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>{item.title}</Text>
-                <Text style={[styles.count, { color: theme.textSecondary }]}>{item.assetCount}</Text>
+                <Text style={[styles.count, { color: theme.textSecondary }]}>{item.assetCount} items</Text>
             </View>
         </TouchableOpacity>
     );
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
             <Text style={[styles.header, { color: theme.text }]}>Albums</Text>
 
             {loading ? (
                 <ActivityIndicator size="large" color={theme.tint} style={{ marginTop: 20 }} />
             ) : (
                 <FlatList
+                    key={numColumns}
                     data={albums}
                     keyExtractor={item => item.id}
                     renderItem={renderItem}
-                    numColumns={2}
+                    numColumns={numColumns}
                     contentContainerStyle={styles.grid}
                     columnWrapperStyle={styles.columnWrapper}
                 />
             )}
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -62,16 +65,18 @@ const styles = StyleSheet.create({
     header: {
         fontSize: 32,
         fontWeight: 'bold',
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
     },
     grid: {
         padding: 16,
     },
     columnWrapper: {
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
+        gap: 16,
     },
     card: {
-        width: '48%',
+        flex: 1,
         borderRadius: 16,
         marginBottom: 16,
         overflow: 'hidden',

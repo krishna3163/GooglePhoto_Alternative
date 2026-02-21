@@ -1,8 +1,9 @@
-import * as SQLite from 'expo-sqlite';
+import * as SQLite from 'expo-sqlite/legacy';
+import { Platform } from 'react-native';
 
-// expo-sqlite type definitions sometimes expose openDatabaseSync only.
-// Use a loose cast to access runtime openDatabase when available.
-const db: any = (SQLite as any).openDatabase ? (SQLite as any).openDatabase('telephoto.db') : (SQLite as any).openDatabaseSync('telephoto.db');
+const db: any = Platform.OS !== 'web' ? SQLite.openDatabase('telephoto.db') : {
+    transaction: () => { console.warn('SQLite is only available on native platforms.'); }
+};
 
 export const initDatabase = () => {
     return new Promise<void>((resolve, reject) => {
@@ -139,15 +140,15 @@ export const getOCRText = (fileUri: string): Promise<string | null> => {
     });
 };
 
-export const searchImagesByText = (query: string): Promise<string[]> => {
+export const searchImagesByText = (query: string): Promise<any[]> => {
     return new Promise((resolve) => {
         db.transaction((tx: any) => {
             tx.executeSql(
-                'SELECT fileUri FROM image_ocr WHERE extractedText LIKE ?;',
+                'SELECT f.* FROM uploaded_files f JOIN image_ocr o ON f.fileUri = o.fileUri WHERE o.extractedText LIKE ?;',
                 [`%${query}%`],
                 (_: any, result: any) => {
                     const _array = result.rows ? result.rows._array : [];
-                    resolve(_array.map((row: any) => row.fileUri));
+                    resolve(_array);
                 },
                 (_: any, error: any) => {
                     console.error('Error searching images', error);
