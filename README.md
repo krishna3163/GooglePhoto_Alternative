@@ -1,108 +1,87 @@
 # TelePhoto Cloud 🚀
-**Cloud Storage powered by Telegram**
+**Unlocking Unlimited Cloud Storage via Telegram**
 
-TelePhoto Cloud is a robust React Native Expo application that transforms your Telegram account into a powerful cloud storage system similar to Google Photos and Google Drive. It automatically backs up your photos and videos, allows manual document uploads, and provides a sleek interface for browsing, searching (with OCR), and organizing your files.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://github.com/krishna3163/GooglePhoto_Alternative/actions/workflows/apk.yml/badge.svg)](https://github.com/krishna3163/GooglePhoto_Alternative/actions)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
----
-
-## ✨ Features
-
-### 📸 Smart Gallery & Photo Backup
-*   **Automatic Sync**: Background engine scans your device and uploads new photos/videos to Telegram.
-*   **Media Support**: Full support for Images (JPEG, PNG), Videos (MP4), and Documents (PDF, DOCX, TXT).
-*   **Selective Sync**: Choose specific device folders/albums to back up.
-*   **Dashboard**: Real-time stats on sync status and storage usage.
-
-### 🔍 Search & Intelligence
-*   **OCR Text Recognition**: Automatically extracts text from images after upload.
-*   **Deep Search**: Find photos by typing text contained *inside* the image (e.g., search "receipt" to find a photo of a bill).
-*   **Global Search**: Filter by filename, media type, or extracted text.
-
-### 📂 Cloud Drive & File Management
-*   **Cloud Browsing**: View all your Telegram-stored files in a Google Drive-style interface.
-*   **Folder System**: Organize files into custom folders.
-*   **Universal Viewer**: Preview images, watch videos, and read documents directly inside the app.
-*   **Download & Share**: Re-download any cloud file to your device's local storage or share via native share sheet.
-
-### ⚙️ advanced Control
-*   **Telegram Integration**: Simple setup using a Telegram Bot Token and Chat ID.
-*   **Sync Logic**: Toggles for Auto-Backup and Wi-Fi-only synchronization to save data.
-*   **Theming**: Beautiful light and dark modes with modern "Immich-style" aesthetics.
-*   **Privacy**: Uses a private Telegram channel/group for your files.
+TelePhoto Cloud is a cutting-edge React Native application that bridges the gap between your mobile device and Telegram's powerful infrastructure. It transforms your Telegram account into a seamless, high-speed, and **privacy-focused** cloud storage suite—giving you a Google Photos/Drive experience with the benefit of Telegram's generous storage limits.
 
 ---
 
-## 🛠 Technology Stack
+## ✨ Features that Wow
 
-*   **Framework**: [Expo](https://expo.dev/) (React Native)
-*   **Language**: TypeScript
-*   **Database**: [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/) (Local tracking of uploads and OCR data)
-*   **Storage Backend**: [Telegram Bot API](https://core.telegram.org/bots/api)
-*   **Network**: Axios
-*   **OCR**: react-native-text-recognition
-*   **Background Tasks**: expo-task-manager & expo-background-fetch
+### 📸 Pro-Grade Gallery & Auto-Sync
+- **Intelligence Sync**: A robust background engine that detects new photos and videos instantly.
+- **Selective Backup**: Fine-grained control over which device albums (WhatsApp, Camera, Instagram) get backed up.
+- **Smart Dashboard**: Visualize your storage health and sync progress at a glance.
 
----
+### 🔍 Search with Superpowers
+- **Native OCR (Optical Character Recognition)**: Every image you upload is scanned. Find that one specific receipt from months ago by just searching the text *on* the receipt.
+- **Deep Search Logic**: Search by filename, media type, or content metadata.
 
-## 📂 Project Structure
+### 📂 Universal Cloud Drive
+- **Unified Interface**: Browse your Telegram-stored files using a modern, intuitive file explorer.
+- **Direct Engagement**: Watch videos, preview PDFs, and listen to audio files directly within the app without downloading.
+- **Native Sharing**: Send files from your cloud to any other app with one tap.
 
-```text
-/
-├── app/                  # Expo Router (Navigation & Tabs)
-│   ├── (tabs)/           # Main App Sections (Photos, Search, Drive, Albums, Profile)
-│   ├── _layout.tsx       # Root Layout & App Initialization
-│   └── ...               # Secondary Screens (Settings, File Viewer)
-├── components/           # Reusable UI Components
-├── constants/            # Theme (Colors.ts) and Configs
-├── database/             # SQLite Schema and Database Services (db.ts)
-├── screens/              # Core Screen Implementations
-├── services/             # Logic Layer
-│   ├── syncService.ts    # Core Sync Engine
-│   ├── telegramService.ts# API communication with Telegram
-│   ├── ocrService.ts     # Text recognition logic
-│   ├── albumService.ts   # Device folder management
-│   └── storage.ts        # AsyncStorage (Settings)
-├── assets/               # Static assets & icons
-└── package.json          # Dependencies & Scripts
-```
+### 🛡️ Privacy & Performance
+- **Your Own Vault**: All files are stored in your private Telegram channel. No middle-man servers.
+- **Battery Efficient**: Built with background-fetch protocols that respect your device's battery life.
+- **Beautiful UI**: Modern "Glassmorphism" and Fluency design elements with adaptive Dark/Light modes.
 
 ---
 
-## 🚀 Getting Started
-
-### Prerequisites
-*   Node.js & npm installed.
-*   Expo Go app (for basic preview) or Development Build (for OCR/Video).
-*   A Telegram Bot (create one via [@BotFather](https://t.me/botfather)).
-*   A Telegram Group/Channel ID where files will be stored.
-
-### Installation
-1.  **Clone the project**
-2.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
-3.  **Start the app**:
-    ```bash
-    npx expo start
-    ```
-
-### Telegram Configuration
-1.  Open the app and navigate to **Profile -> Settings**.
-2.  Enter your **Telegram Bot Token**.
-3.  Enter your **Chat ID** (the ID of your private channel or your own user ID).
-4.  Tap **Save**.
-5.  Use the **Test Upload** button to verify the connection.
+## 🛠 Tech Stack
+- **Engine**: [Expo](https://expo.dev/) (React Native) + TypeScript
+- **State & Local DB**: [SQLite](https://docs.expo.dev/versions/latest/sdk/sqlite/) for lightning-fast local indexing.
+- **Back-end**: [Telegram Bot API](https://core.telegram.org/bots/api)
+- **AI/Vision**: On-device OCR for privacy-first text extraction.
+- **CI/CD**: Automated GitHub Actions for APK builds.
 
 ---
 
-## 📝 Important Notes
+## 🤝 Build With Us: Join the Revolution!
+We are building more than just an app; we are building a decentralized storage alternative. Whether you are a UI/UX expert, a performance geek, or a documentation wizard, **your contribution matters.**
 
-*   **OCR & Video**: These features require native modules. If running in "Expo Go", some parts may be simulated. For full functionality, it is recommended to create a development build (`npx expo run:android` or `npx expo run:ios`).
-*   **File Size**: Telegram Bot API supports files up to 50MB via standard upload. For larger 4K videos, ensure your expectations align with API limits.
-*   **Privacy**: Your data is stored on Telegram's servers. Using a private channel ensures only you (and anyone you add to the channel) can see the backed-up files.
+### Why Contribute?
+1. **Solve a Real Problem**: Help reduce dependence on expensive cloud subscriptions.
+2. **Master React Native**: Work with native modules (OCR, SQLite, Background Tasks).
+3. **Shape the Roadmap**: Have a say in features like End-to-End Encryption or Face Detection.
+
+### How to Help?
+- 🐛 **Bug Hunting**: Report issues or submit fixes.
+- ✨ **Feature Requests**: Have a crazy idea? Open an issue!
+- 🎨 **Design**: Help us polish the look and feel.
+- 📖 **Docs**: Improve the onboarding experience for new users.
+
+Check out our [Contribution Guidelines](CONTRIBUTING.md) (coming soon) or just jump into the [Issues](https://github.com/krishna3163/GooglePhoto_Alternative/issues)!
+
+---
+
+## 🚀 Quick Setup
+
+1. **Clone & Install**:
+   ```bash
+   git clone https://github.com/krishna3163/GooglePhoto_Alternative.git
+   cd GooglePhoto_Alternative
+   npm install
+   ```
+2. **Launch**:
+   ```bash
+   npx expo start
+   ```
+3. **Connect Your Telegram**:
+   - Get a token from [@BotFather](https://t.me/botfather).
+   - Create a private channel and get its Chat ID (use [@IDBot](https://t.me/myidbot)).
+   - Enter these in the app's **Settings**.
 
 ---
 
 ## 📄 License
-This project is open-source. Feel free to modify and expand!
+Distributed under the **MIT License**. See `LICENSE` for more information.
+
+---
+
+## 🌟 Support the Project
+If this project helps you save on storage costs, give us a ⭐️ on GitHub! It helps more developers discover and contribute to the project.
