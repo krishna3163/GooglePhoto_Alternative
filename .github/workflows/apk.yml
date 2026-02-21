@@ -24,20 +24,19 @@ jobs:
           distribution: 'temurin'
 
       - name: 📦 Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: ✅ Verify npm dependencies
         run: npm ls --depth=0
 
-      - name: 🛠 Prebuild Expo project
-        run: npx expo prebuild --platform android --no-install
+      - name: 🔧 Apply native patches
+        run: node scripts/fix-text-recognition.js
 
       - name: 🔑 Grant execute permission for gradlew
         run: chmod +x android/gradlew
 
       - name: 🔨 Build APK (Release)
         run: |
-          node scripts/fix-text-recognition.js
           cd android
           ./gradlew assembleRelease --stacktrace --info --warning-mode all
 
