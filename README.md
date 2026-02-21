@@ -21,7 +21,36 @@ Imagine you have a giant, magical backpack (that's **Telegram**). You can put al
 
 ---
 
-## 📈 Project Growth
+## �️ How to set it up? (Even a kid can do it!)
+
+To make the magic work, you need to tell our app where your "Magical Backpack" is. Follow these simple steps:
+
+### 🤖 Step 1: Create your Robot Helper (Bot Token)
+Think of a Bot Token as a **"Secret Password"** for your robot.
+1. Open Telegram and search for **@BotFather** (He is the king of all robots!).
+2. Tap **Start** and type `/newbot`.
+3. Give your robot a name (like "MyPhotoBot").
+4. Give it a username that ends in "bot" (like `MagicBackpack_bot`).
+5. **Success!** BotFather will give you a long string of letters and numbers. That's your **Bot Token**. Copy it!
+
+### 🏰 Step 2: Create your Secret Vault (Chat ID)
+The Chat ID is like the **"Address"** of your secret room.
+1. Create a **New Channel** in Telegram. Make it **Private**.
+2. Give it a cool name like "My Secret Vault."
+3. Add the robot you just created (the one from Step 1) as an **Administrator** to this channel.
+4. Now, we need the address. Send a quick message like "Hello" in that channel.
+5. Forward that message to **@IDBot** or search for **@MissRose_bot** and type `/id` inside your channel.
+6. It will give you a number (usually starting with a `-`). That is your **Chat ID**. Copy it!
+
+### 🔑 Step 3: Start the Magic
+1. Open the **TelePhoto Cloud** app on your phone.
+2. Go to **Settings**.
+3. Paste the **Bot Token** and the **Chat ID** into the boxes.
+4. Tap **Save** and you're done! Your robot is now ready to start packing your bags! 🎒
+
+---
+
+## �📈 Project Growth
 ![Commit Activity](https://img.shields.io/github/commit-activity/m/krishna3163/GooglePhoto_Alternative)
 ![Last Commit](https://img.shields.io/github/last-commit/krishna3163/GooglePhoto_Alternative)
 ![GitHub repo size](https://img.shields.io/github/repo-size/krishna3163/GooglePhoto_Alternative)
@@ -69,7 +98,7 @@ We are making storage free for everyone. Whether you are a coding pro or just st
 
 ---
 
-## 🚀 Easy 3-Step Setup
+## 🚀 Dev Setup (For the Techies)
 
 1. **Get the Code**:
    ```bash
@@ -81,10 +110,6 @@ We are making storage free for everyone. Whether you are a coding pro or just st
    ```bash
    npx expo start
    ```
-3. **Connect to Telegram**:
-   - Talk to [@BotFather](https://t.me/botfather) to get your "Key" (Bot Token).
-   - Create a private channel and get its ID.
-   - Put them in the app settings, and you're done!
 
 ---
 
