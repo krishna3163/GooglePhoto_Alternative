@@ -9,7 +9,10 @@
             "supportsTablet": true
         },
         "android": {
-            "package": "com.krishna3163.gphoton"
+            "package": "com.krishna3163.gphoton",
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0"
         },
         "web": {
             "output": "static",
