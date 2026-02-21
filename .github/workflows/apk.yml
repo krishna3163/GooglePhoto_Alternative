@@ -26,6 +26,9 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
+      - name: ✅ Verify npm dependencies
+        run: npm ls --depth=0
+
       - name: 🛠 Prebuild Expo project
         run: npx expo prebuild --platform android --no-install
 
@@ -35,7 +38,7 @@ jobs:
       - name: 🔨 Build APK (Debug)
         run: |
           cd android
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace --info
 
       # Step for Release build (Requires keystore setup)
       # - name: 🔨 Build APK (Release)
