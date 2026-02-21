@@ -37,8 +37,9 @@ jobs:
 
       - name: 🔨 Build APK (Debug)
         run: |
+          node scripts/fix-text-recognition.js
           cd android
-          ./gradlew assembleDebug --stacktrace --info
+          ./gradlew assembleDebug --stacktrace --info --warning-mode all
 
       # Step for Release build (Requires keystore setup)
       # - name: 🔨 Build APK (Release)
