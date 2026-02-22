@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Send, Users, MessageSquare, Shield, Lock } from 'lucide-react';
+import React from 'react';
+import { Send, Users, MessageSquare, Shield } from 'lucide-react';
 import type { TelegramConfig } from '../types';
 import './TelegramManager.css';
 
@@ -8,7 +8,7 @@ interface TelegramManagerProps {
 }
 
 const TelegramManager: React.FC<TelegramManagerProps> = ({ config }) => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const telegramUser = config?.telegramUser;
 
     // Mock data for demonstration
     const mockChats = [
@@ -27,17 +27,14 @@ const TelegramManager: React.FC<TelegramManagerProps> = ({ config }) => {
         );
     }
 
-    if (!isLoggedIn) {
+    if (!telegramUser) {
         return (
             <div className="tg-login-screen">
                 <div className="login-card">
                     <Send size={48} className="tg-logo" />
                     <h2>Telegram Workspace</h2>
                     <p>Manage your groups, channels, and messages directly from TeleGphoto.</p>
-                    <button className="tg-primary-login" onClick={() => setIsLoggedIn(true)}>
-                        <Lock size={18} />
-                        Login with Telegram
-                    </button>
+                    <p className="login-hint">Please open <b>Settings</b> and <b>Login with Telegram</b> to activate this console.</p>
                     <span className="secure-text">Secure connection via Official Telegram API</span>
                 </div>
             </div>
@@ -47,6 +44,20 @@ const TelegramManager: React.FC<TelegramManagerProps> = ({ config }) => {
     return (
         <div className="tg-manager-container">
             <div className="tg-sidebar">
+                <div className="user-profile-header">
+                    <div className="user-avatar-wrapper">
+                        {telegramUser.photo_url ? (
+                            <img src={telegramUser.photo_url} alt={telegramUser.first_name} className="user-avatar" />
+                        ) : (
+                            <div className="user-avatar-placeholder">{telegramUser.first_name[0]}</div>
+                        )}
+                        <div className="online-status"></div>
+                    </div>
+                    <div className="user-details">
+                        <div className="user-name">{telegramUser.first_name} {telegramUser.last_name}</div>
+                        <div className="user-status">@{telegramUser.username || 'user'}</div>
+                    </div>
+                </div>
                 <div className="sidebar-header">
                     <h3>Messages</h3>
                     <div className="sidebar-actions">
@@ -72,8 +83,8 @@ const TelegramManager: React.FC<TelegramManagerProps> = ({ config }) => {
                 </div>
                 <div className="empty-state">
                     <Send size={48} />
-                    <p>Developer Console Active</p>
-                    <span>Full User-API integration enabled for this session.</span>
+                    <p>Welcome, {telegramUser.first_name}!</p>
+                    <span>Developer Console Active with Official Authenticated Session.</span>
                 </div>
             </div>
         </div>

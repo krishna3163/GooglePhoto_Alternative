@@ -85,3 +85,14 @@ export const sendTextMessage = async (config: TelegramConfig, text: string): Pro
         throw error;
     }
 };
+
+export const getBotInfo = async (token: string): Promise<{ username: string; first_name: string }> => {
+    const response = await axios.get(`${TELEGRAM_API_BASE}${token}/getMe`);
+    if (response.data?.ok) {
+        return {
+            username: response.data.result.username,
+            first_name: response.data.result.first_name
+        };
+    }
+    throw new Error('Failed to fetch bot info');
+};

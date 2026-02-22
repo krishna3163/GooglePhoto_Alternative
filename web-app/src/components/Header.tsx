@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Search, Upload, HelpCircle, Settings, FolderPlus, LogOut, Check, Edit3, Heart, BookOpen, Users, ExternalLink } from 'lucide-react';
-import type { TelegramConfig, PhotoAsset } from '../types';
+import type { TelegramConfig } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Header.css';
 

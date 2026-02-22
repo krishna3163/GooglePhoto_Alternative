@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import type { TelegramConfig } from '../types';
-import { HelpCircle, Shield, Key } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import type { TelegramConfig, TelegramUser } from '../types';
+import { HelpCircle, Shield, UserCheck } from 'lucide-react';
+import { getBotInfo } from '../services/telegramService';
+import TelegramLoginButton from './TelegramLoginButton';
 import './SettingsModal.css';
 
 interface SettingsModalProps {
@@ -14,10 +16,24 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ config, onSave, onClose, 
     const [token, setToken] = useState(config?.token || '');
     const [chatId, setChatId] = useState(config?.chatId || '');
     const [isDeveloperMode, setIsDeveloperMode] = useState(config?.isDeveloperMode || false);
+    const [botUsername, setBotUsername] = useState<string | null>(null);
+    const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(config?.telegramUser || null);
+
+    useEffect(() => {
+        if (token.includes(':')) {
+            getBotInfo(token)
+                .then(info => setBotUsername(info.username))
+                .catch(() => setBotUsername(null));
+        }
+    }, [token]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ token, chatId, isDeveloperMode });
+        onSave({ token, chatId, isDeveloperMode, telegramUser });
+    };
+
+    const handleTelegramAuth = (user: TelegramUser) => {
+        setTelegramUser(user);
     };
 
     return (
@@ -72,10 +88,28 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ config, onSave, onClose, 
                         {isDeveloperMode && (
                             <div className="telegram-login-wrapper">
                                 <p className="dev-helper-text">Enhanced features enabled. Authenticate to manage messages directly.</p>
-                                <button type="button" className="tg-login-btn">
-                                    <Key size={18} />
-                                    <span>Login with Telegram</span>
-                                </button>
+                                {telegramUser ? (
+                                    <div className="user-authenticated">
+                                        <div className="auth-badge">
+                                            <UserCheck size={18} />
+                                            <span>Authenticated as {telegramUser.first_name}</span>
+                                        </div>
+                                        <button type="button" className="retry-auth-btn" onClick={() => setTelegramUser(null)}>
+                                            Switch User
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="login-widget-container">
+                                        {botUsername ? (
+                                            <TelegramLoginButton
+                                                botUsername={botUsername}
+                                                onAuth={handleTelegramAuth}
+                                            />
+                                        ) : (
+                                            <p className="token-hint">Please provide a valid Bot Token to enable Login.</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
