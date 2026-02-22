@@ -1,71 +1,79 @@
-def projectRoot = rootDir.getParentFile()
+// =============================================================================
+// APK Build - settings.gradle (root: android/)
+// All Node commands run from PROJECT_ROOT (parent of android/) so node_modules is found.
+// =============================================================================
 
+// Repo root = parent of android/ (where settings.gradle lives)
+def projectRoot = rootDir.parentFile
+
+// Run node from project root and return trimmed output
+def nodeRun(String script) {
+  def proc = ["node", "-e", script].execute(null, projectRoot)
+  proc.waitFor()
+  if (proc.exitValue() != 0) throw new GradleException("node failed: " + proc.err.text)
+  return proc.text.trim()
+}
+
+def nodeResolve(String spec) {
+  return nodeRun("console.log(require.resolve(${spec}))")
+}
+
+// Get React Native version (e.g. "0.74.5")
+def rnVersion = nodeRun("console.log(require('react-native/package.json').version)")
+def rnParts = rnVersion.split("-")[0].tokenize(".")
+def reactNativeMinor = rnParts.size() > 1 ? rnParts[1].toInteger() : 0
+
+// =============================================================================
+// Plugin management: include builds so plugins can be resolved
+// =============================================================================
 pluginManagement {
-  def version = providers.exec {
-    commandLine("node", "-e", "console.log(require('react-native/package.json').version);")
-    workingDir(projectRoot)
-  }.standardOutput.asText.get().trim()
-  def (_, reactNativeMinor, reactNativePatch) = version.split("-")[0].tokenize('.').collect { it.toInteger() }
-
-  includeBuild(new File(["node", "--print", "require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })"].execute(null, projectRoot).text.trim()).getParentFile())
-  includeBuild(new File(["node", "--print", "require.resolve('@react-native/gradle-plugin/package.json')"].execute(null, projectRoot).text.trim()).getParentFile())
-  if(reactNativeMinor == 74){
+  includeBuild(new File(nodeResolve("\"expo-modules-autolinking/package.json\", { paths: [require.resolve('expo/package.json')] }")).parentFile)
+  includeBuild(new File(nodeResolve("\"@react-native/gradle-plugin/package.json\"")).parentFile)
+  // RN 0.74.x: plugin com.facebook.react.settings comes from this local build
+  if (reactNativeMinor == 74) {
     includeBuild("react-settings-plugin")
   }
 }
 
-plugins { id("com.facebook.react.settings") }
+plugins {
+  id("com.facebook.react.settings")
+}
 
 def getRNMinorVersion() {
-  def version = providers.exec {
-    commandLine("node", "-e", "console.log(require('react-native/package.json').version);")
-    workingDir(projectRoot)
-  }.standardOutput.asText.get().trim()
-
-  def coreVersion = version.split("-")[0]
-  def (major, minor, patch) = coreVersion.tokenize('.').collect { it.toInteger() }
-
-  return minor
+  def v = nodeRun("console.log(require('react-native/package.json').version)")
+  return v.split("-")[0].tokenize(".")[1].toInteger()
 }
 
 if (getRNMinorVersion() >= 75) {
   extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
-    if (System.getenv('EXPO_UNSTABLE_CORE_AUTOLINKING') == '1') {
-      println('\u001B[32mUsing expo-modules-autolinking as core autolinking source\u001B[0m')
-      def command = [
-        'node',
-        '--no-warnings',
-        '--eval',
-        'require(require.resolve(\'expo-modules-autolinking\', { paths: [require.resolve(\'expo/package.json\')] }))(process.argv.slice(1))',
-        'react-native-config',
-        '--json',
-        '--platform',
-        'android'
-      ].toList()
-      ex.autolinkLibrariesFromCommand(command)
+    if (System.getenv("EXPO_UNSTABLE_CORE_AUTOLINKING") == "1") {
+      def cmd = ["node", "--no-warnings", "--eval",
+        "require(require.resolve('expo-modules-autolinking', { paths: [require.resolve('expo/package.json')] }))(process.argv.slice(1))",
+        "react-native-config", "--json", "--platform", "android"]
+      ex.autolinkLibrariesFromCommand(cmd)
     } else {
       ex.autolinkLibrariesFromCommand()
     }
   }
 }
 
-rootProject.name = 'TelePhoto Cloud'
+rootProject.name = "TelePhoto Cloud"
 
 dependencyResolutionManagement {
   versionCatalogs {
     reactAndroidLibs {
-      from(files(new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, projectRoot).text.trim(), "../gradle/libs.versions.toml")))
+      from(files(new File(nodeResolve("'react-native/package.json'"), "../gradle/libs.versions.toml")))
     }
   }
 }
 
-apply from: new File(["node", "--print", "require.resolve('expo/package.json')"].execute(null, projectRoot).text.trim(), "../scripts/autolinking.gradle");
+apply from: new File(nodeResolve("\"expo/package.json\""), "../scripts/autolinking.gradle")
 useExpoModules()
 
 if (getRNMinorVersion() < 75) {
-  apply from: new File(["node", "--print", "require.resolve('@react-native-community/cli-platform-android/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, projectRoot).text.trim(), "../native_modules.gradle");
+  apply from: new File(nodeResolve("\"@react-native-community/cli-platform-android/package.json\", { paths: [require.resolve('react-native/package.json')] }"), "../native_modules.gradle")
   applyNativeModulesSettingsGradle(settings)
 }
 
-include ':app'
-includeBuild(new File(["node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, projectRoot).text.trim()).getParentFile())
+include ":app"
+includeBuild(new File(nodeResolve("\"@react-native/gradle-plugin/package.json\", { paths: [require.resolve('react-native/package.json')] }")).parentFile)
