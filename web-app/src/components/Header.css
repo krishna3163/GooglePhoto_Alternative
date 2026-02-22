@@ -23,13 +23,19 @@
 .header-menu-btn {
     display: none;
     color: var(--text-primary);
-    background: var(--hover-overlay);
-    border: 1px solid var(--border-color);
-    width: 42px;
-    height: 42px;
+    background: transparent;
+    border: none;
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-menu-btn:hover {
+    background: var(--hover-overlay);
 }
 
 .logo-container {
@@ -189,6 +195,59 @@
     font-size: 12px;
 }
 
+.name-display-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.edit-icon-btn {
+    background: var(--hover-overlay);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.edit-icon-btn:hover {
+    background: var(--active-overlay);
+    color: var(--accent-blue);
+}
+
+.name-edit-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.name-edit-box input {
+    background: var(--bg-primary);
+    border: 1px solid var(--accent-blue);
+    color: white;
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    width: 100%;
+    outline: none;
+}
+
+.name-edit-box button {
+    background: var(--accent-blue);
+    border: none;
+    border-radius: 8px;
+    padding: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: #000;
+}
+
 .dropdown-divider {
     height: 1px;
     background-color: var(--border-color);
@@ -209,6 +268,92 @@
 .dropdown-item:hover {
     background-color: var(--hover-overlay);
     color: var(--accent-blue);
+}
+
+.developer-mode-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-right: 16px !important;
+}
+
+.header-dev-toggle {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.header-dev-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.header-dev-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--border-color);
+    transition: .3s;
+    border-radius: 20px;
+}
+
+.header-dev-slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+.header-dev-toggle input:checked+.header-dev-slider {
+    background-color: var(--accent-blue);
+}
+
+.header-dev-toggle input:checked+.header-dev-slider:before {
+    transform: translateX(16px);
+}
+
+.india-pride {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.india-pride span {
+    display: flex;
+    align-items: center;
+}
+
+.india-pride b {
+    color: var(--text-primary);
+    margin-left: 4px;
+    letter-spacing: 0.5px;
+}
+
+.flag-emoji {
+    font-size: 18px;
+    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.3));
+}
+
+.sign-out-item {
+    color: #f28b82 !important;
+}
+
+.sign-out-item:hover {
+    background-color: rgba(242, 139, 130, 0.1) !important;
 }
 
 /* ==================== RESPONSIVE ==================== */

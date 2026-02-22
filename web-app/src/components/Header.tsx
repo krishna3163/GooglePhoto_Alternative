@@ -202,7 +202,7 @@ const Header: React.FC<HeaderProps> = ({
                                         ) : (
                                             <div className="name-display-box">
                                                 <span className="user-name">{userName}</span>
-                                                <button onClick={() => setIsEditingName(true)}><Edit3 size={14} /></button>
+                                                <button className="edit-icon-btn" onClick={() => setIsEditingName(true)}><Edit3 size={14} /></button>
                                             </div>
                                         )}
                                         <span className="user-email">TeleGphoto Cloud</span>
@@ -249,7 +249,7 @@ const Header: React.FC<HeaderProps> = ({
                                 <div className="dropdown-divider"></div>
 
                                 <div className="india-pride">
-                                    <span>Build with <Heart size={12} fill="#ff4b2b" color="#ff4b2b" strokeWidth={3} /> from <b>INDIA</b></span>
+                                    <span>Build with <Heart size={12} fill="#ff4b2b" color="#ff4b2b" style={{ margin: '0 4px' }} /> from <b>INDIA</b></span>
                                     <span className="flag-emoji">🇮🇳</span>
                                 </div>
 
