@@ -107,6 +107,37 @@ This channel will act as your personal cloud storage.
 
 ---
 
+## 🎉 What's New: Model 3 (Account-Based Storage)
+
+We just added an **experimental** new storage option! 🚀
+
+### 📱 Model 3: Store Files in Your Telegram Saved Messages
+
+Instead of using a bot, you can now use your **Telegram account directly** to store files in your Saved Messages! This means:
+
+✨ **No Bot Setup** - Login with your phone number + OTP  
+✨ **Direct Storage** - Files go into your Saved Messages  
+✨ **Mobile Sync** - Access from Telegram app instantly  
+✨ **Seamless** - Works across web and mobile  
+
+### How to Enable:
+
+1. **Unlock Developer Mode**: Tap the TelePhoto logo 5 times (or use Settings toggle)
+2. **Enable Model 3**: Go to Settings → Storage Model → Select Model 3
+3. **Login**: Verify with OTP from Telegram
+4. **Done!** - Choose storage destination when uploading
+
+### 📚 Learn More:
+👉 **[Read Full Model 3 Documentation →](./MODEL3_FEATURES.md)**
+
+#### Key Information:
+- ⚠️ **Experimental Feature** - Use with caution
+- ✅ **Model 1 (Bot)** remains the default
+- ✅ **No Breaking Changes** - Existing setup still works
+- 🔐 **Encrypted Sessions** - Your credentials stay safe
+
+---
+
 ## 🤝 Build With Us: Join the Revolution!
 We are making storage free for everyone. Whether you are a coding pro or just starting out, we need your help!
 
