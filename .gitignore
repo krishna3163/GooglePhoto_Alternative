@@ -19,3 +19,6 @@ android/*.keystore
 *.p12
 *.key
 *.mobileprovision
+
+app-debug
+app-debug.apk
