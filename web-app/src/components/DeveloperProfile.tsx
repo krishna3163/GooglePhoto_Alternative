@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Github, Linkedin, Mail, ExternalLink, Award, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import './DeveloperProfile.css';
@@ -7,7 +7,56 @@ interface DeveloperProfileProps {
     onClose: () => void;
 }
 
+declare global {
+    interface Window {
+        formbutton?: (action: string, config: any) => void;
+    }
+}
+
 const DeveloperProfile: React.FC<DeveloperProfileProps> = ({ onClose }) => {
+    useEffect(() => {
+        // Initialize formbutton widget
+        if (window.formbutton) {
+            window.formbutton('create', {
+                action: 'https://formspree.io/f/xeelrpdd',
+                title: 'Report Issues / Bugs',
+                fields: [
+                    {
+                        type: 'email',
+                        label: 'Email:',
+                        name: 'email',
+                        required: true,
+                        placeholder: 'your@email.com'
+                    },
+                    {
+                        type: 'textarea',
+                        label: 'Message:',
+                        name: 'message',
+                        placeholder: 'Describe the issue or bug...',
+                        required: true
+                    },
+                    { type: 'submit' }
+                ],
+                styles: {
+                    title: {
+                        backgroundColor: '#8ab4f8',
+                        color: '#1a1c1e',
+                        fontSize: '18px'
+                    },
+                    button: {
+                        backgroundColor: '#8ab4f8',
+                        color: '#1a1c1e',
+                        fontSize: '14px'
+                    },
+                    field: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '8px'
+                    }
+                }
+            });
+        }
+    }, []);
     return (
         <motion.div
             className="dev-profile-overlay"
@@ -114,17 +163,8 @@ const DeveloperProfile: React.FC<DeveloperProfileProps> = ({ onClose }) => {
                                 <ExternalLink size={20} />
                                 <h3>Report Issues / Bugs</h3>
                             </div>
-                            <form action="https://formspree.io/f/xeelrpdd" method="POST" className="bug-form">
-                                <div className="form-group-contact">
-                                    <label htmlFor="email">Your email:</label>
-                                    <input type="email" name="email" id="email" placeholder="email@example.com" required className="bug-input" />
-                                </div>
-                                <div className="form-group-contact">
-                                    <label htmlFor="message">Your message:</label>
-                                    <textarea name="message" id="message" placeholder="Describe the issue or bug..." required className="bug-textarea"></textarea>
-                                </div>
-                                <button type="submit" className="bug-submit-btn">Send Report</button>
-                            </form>
+                            <p style={{ color: '#9aa0a6', fontSize: '14px', marginBottom: '16px' }}>Click the button below to report bugs using Formspree:</p>
+                            <div id="formspree-widget"></div>
                         </section>
                     </div>
                 </div>
