@@ -186,3 +186,187 @@
     font-size: 13px;
     opacity: 0.7;
 }
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+
+/* Mobile Phones (max 480px) */
+@media (max-width: 480px) {
+    .photo-grid-container {
+        gap: clamp(16px, 3vw, 24px);
+    }
+
+    .grid-title {
+        font-size: clamp(20px, 5vw, 28px);
+    }
+
+    .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr));
+        gap: 2px;
+    }
+
+    .photo-item {
+        aspect-ratio: 1;
+        border-radius: 2px;
+    }
+
+    .group-date {
+        font-size: 12px;
+        padding: 8px 0;
+    }
+
+    .empty-illustration {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+
+    .empty-state {
+        height: 60vh;
+        padding: 16px;
+    }
+
+    .empty-state h2 {
+        font-size: 18px;
+    }
+
+    .empty-state p {
+        font-size: 13px;
+    }
+
+    .video-play-btn {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+/* Tablets (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    .photo-grid-container {
+        gap: clamp(20px, 3vw, 28px);
+    }
+
+    .grid-title {
+        font-size: clamp(22px, 4.5vw, 28px);
+    }
+
+    .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 3px;
+    }
+
+    .photo-item {
+        aspect-ratio: 3/4;
+        border-radius: 4px;
+    }
+
+    .group-date {
+        font-size: 13px;
+    }
+
+    .empty-state {
+        height: 65vh;
+    }
+
+    .empty-illustration {
+        font-size: 56px;
+    }
+}
+
+/* Small Desktops (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 4px;
+    }
+
+    .grid-title {
+        font-size: 28px;
+    }
+
+    .group-date {
+        font-size: 14px;
+    }
+}
+
+/* Large Desktops (1025px+) */
+@media (min-width: 1025px) {
+    .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 4px;
+    }
+
+    .photo-item:hover img,
+    .photo-item:hover video {
+        transform: scale(1.05);
+    }
+}
+
+/* Extra Large Desktops (1921px+) */
+@media (min-width: 1921px) {
+    .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+/* ==================== LANDSCAPE OPTIMIZATION ==================== */
+
+@media (orientation: landscape) and (max-height: 500px) {
+    .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 2px;
+    }
+
+    .photo-item {
+        aspect-ratio: 1;
+    }
+
+    .group-date {
+        font-size: 11px;
+        padding: 4px 0;
+    }
+
+    .empty-state {
+        height: 80vh;
+    }
+}
+
+/* ==================== TOUCH DEVICE OPTIMIZATION ==================== */
+
+@media (hover: none) and (pointer: coarse) {
+    .photo-item {
+        border-radius: 8px;
+    }
+
+    .photo-item img,
+    .photo-item video {
+        transition: none;
+    }
+
+    .photo-item:active img,
+    .photo-item:active video {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .photo-grid-container {
+        animation: none;
+    }
+
+    .photo-item img,
+    .photo-item video {
+        transition: none;
+    }
+}
+
+@media (prefers-contrast: more) {
+    .photo-item {
+        border: 1px solid rgba(138, 180, 248, 0.5);
+    }
+
+    .group-date {
+        border-bottom: 1px solid rgba(138, 180, 248, 0.3);
+    }
+}

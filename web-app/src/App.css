@@ -3,6 +3,7 @@
   width: 100vw;
   height: 100vh;
   background-color: var(--bg-primary);
+  overflow: hidden;
 }
 
 .main-wrapper {
@@ -11,12 +12,34 @@
   flex: 1;
   height: 100vh;
   overflow: hidden;
+  width: 100%;
 }
 
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  overflow-x: hidden;
+  padding: clamp(12px, 3vw, 24px);
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+.content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: rgba(138, 180, 248, 0.3);
+  border-radius: 3px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: rgba(138, 180, 248, 0.5);
 }
 
 .auth-overlay {
@@ -30,4 +53,125 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: clamp(12px, 2vw, 20px);
+  backdrop-filter: blur(4px);
+}
+
+/* ==================== RESPONSIVE LAYOUT ==================== */
+
+/* Mobile Phones (max 480px) */
+@media (max-width: 480px) {
+  .app-container {
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+  }
+
+  .main-wrapper {
+    height: 100vh;
+    max-height: 100vh;
+  }
+
+  .content {
+    padding: clamp(10px, 2.5vw, 16px);
+    max-height: calc(100vh - 80px);
+  }
+
+  .auth-overlay {
+    padding: 12px;
+  }
+}
+
+/* Tablets (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .content {
+    padding: clamp(14px, 2.5vw, 20px);
+  }
+}
+
+/* Small Desktops (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .content {
+    padding: clamp(16px, 2.5vw, 24px);
+  }
+}
+
+/* Large Desktops (1025px+) */
+@media (min-width: 1025px) {
+  .content {
+    padding: 24px;
+  }
+}
+
+/* Landscape orientation optimization */
+@media (orientation: landscape) and (max-height: 500px) {
+  .main-wrapper {
+    max-height: 100vh;
+  }
+
+  .content {
+    max-height: calc(100vh - 60px);
+    padding: clamp(8px, 2vw, 12px);
+  }
+}
+
+/* ==================== SAFE AREA SUPPORT ==================== */
+
+@supports (padding: max(0px)) {
+  .main-wrapper {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+
+  .content {
+    padding-bottom: max(
+      clamp(12px, 3vw, 24px),
+      env(safe-area-inset-bottom)
+    );
+  }
+}
+
+/* ==================== TOUCH AND INTERACTIVITY ==================== */
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    scroll-behavior: auto;
+  }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+
+/* Focus visible for keyboard navigation */
+.app-container:focus-visible {
+  outline: 2px solid var(--accent-blue, #8ab4f8);
+}
+
+/* High contrast mode */
+@media (prefers-contrast: more) {
+  .app-container {
+    border: 1px solid currentColor;
+  }
+
+  .content {
+    border-color: currentColor;
+  }
+}
+
+/* ==================== PRINT STYLES ==================== */
+
+@media print {
+  .app-container {
+    width: 100%;
+    height: auto;
+  }
+
+  .main-wrapper {
+    height: auto;
+  }
+
+  .content {
+    overflow: visible;
+    padding: 0;
+  }
 }

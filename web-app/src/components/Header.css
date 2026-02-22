@@ -377,3 +377,269 @@
     transition: width 0.4s ease-out;
     box-shadow: 0 0 10px rgba(138, 180, 248, 0.4);
 }
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+
+/* Mobile Phones (max 480px) */
+@media (max-width: 480px) {
+    .header {
+        padding: 0 clamp(8px, 2vw, 12px);
+        height: auto;
+        min-height: 56px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .header-left {
+        min-width: auto;
+        flex: 1;
+    }
+
+    .logo-container {
+        gap: 8px;
+    }
+
+    .logo-img {
+        width: 32px;
+        height: 32px;
+    }
+
+    .logo-text {
+        display: none;
+    }
+
+    .header-center {
+        order: 3;
+        flex: 1 100%;
+        max-width: 100%;
+        padding: 0;
+        min-height: 44px;
+    }
+
+    .search-bar {
+        height: 40px;
+        font-size: 14px;
+        border-radius: 6px;
+        padding: 0 12px;
+    }
+
+    .search-input {
+        font-size: 14px;
+    }
+
+    .header-right {
+        gap: 8px;
+        min-width: auto;
+    }
+
+    .icon-button {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        padding: 0;
+    }
+
+    .icon-button svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .profile-container {
+        position: relative;
+    }
+
+    .profile-img {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        font-size: 14px;
+    }
+
+    .profile-dropdown {
+        position: fixed;
+        right: 8px;
+        top: 56px;
+        left: 8px;
+        width: auto;
+        max-width: none;
+        border-radius: 8px;
+    }
+
+    .dropdown-user-info {
+        padding: 12px;
+    }
+
+    .dropdown-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+
+    /* Bottom Progress Toast Mobile */
+    .bottom-progress-toast {
+        bottom: 16px;
+        left: 12px;
+        right: 12px;
+        transform: none;
+        min-width: auto;
+        width: auto;
+        padding: 12px 16px;
+        max-width: calc(100vw - 24px);
+    }
+
+    .toast-text-row {
+        font-size: 12px;
+    }
+}
+
+/* Tablets (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    .header {
+        padding: 0 clamp(12px, 2vw, 16px);
+        min-height: 60px;
+    }
+
+    .header-left {
+        min-width: 150px;
+    }
+
+    .logo-img {
+        width: 36px;
+        height: 36px;
+    }
+
+    .logo-text {
+        font-size: 18px;
+    }
+
+    .header-center {
+        max-width: 500px;
+        padding: 0 clamp(20px, 2vw, 30px);
+    }
+
+    .search-bar {
+        height: 44px;
+        padding: 0 14px;
+    }
+
+    .icon-button {
+        width: 40px;
+        height: 40px;
+    }
+
+    .profile-img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .bottom-progress-toast {
+        min-width: 280px;
+    }
+}
+
+/* Small Desktops (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .header {
+        padding: 0 clamp(16px, 2vw, 20px);
+        min-height: 64px;
+    }
+
+    .header-center {
+        max-width: 600px;
+        padding: 0 40px;
+    }
+
+    .search-bar {
+        height: 48px;
+    }
+}
+
+/* Large Desktops (1025px+) */
+@media (min-width: 1025px) {
+    .header {
+        padding: 0 24px;
+        min-height: 64px;
+    }
+
+    .header-left {
+        min-width: 280px;
+    }
+
+    .logo-text {
+        font-size: 24px;
+    }
+}
+
+/* ==================== LANDSCAPE OPTIMIZATION ==================== */
+
+@media (orientation: landscape) and (max-height: 500px) {
+    .header {
+        min-height: 48px;
+        padding: 0 12px;
+    }
+
+    .logo-img {
+        width: 28px;
+        height: 28px;
+    }
+
+    .logo-text {
+        font-size: 16px;
+    }
+
+    .search-bar {
+        height: 36px;
+        padding: 0 12px;
+    }
+
+    .icon-button {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+    }
+
+    .profile-img {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* ==================== TOUCH DEVICE OPTIMIZATION ==================== */
+
+@media (hover: none) and (pointer: coarse) {
+    .icon-button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .icon-button:active {
+        background-color: rgba(138, 180, 248, 0.2);
+        border-radius: 8px;
+    }
+
+    .dropdown-item:active {
+        background-color: #424242;
+    }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .profile-dropdown {
+        animation: none;
+    }
+
+    .toast-progress-fill {
+        transition: none;
+    }
+}
+
+@media (prefers-contrast: more) {
+    .header {
+        border-bottom-width: 2px;
+    }
+
+    .icon-button {
+        border: 1px solid currentColor;
+    }
+}

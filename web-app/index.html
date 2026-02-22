@@ -3,18 +3,44 @@
 
 <head>
   <meta charset="UTF-8" />
+  <!-- Responsive & Performance Meta Tags -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+  <meta name="description" content="TeleGphoto: Your unlimited cloud storage powered by Telegram. Secure, fast, and completely free." />
+  <meta name="theme-color" content="#1a1c1e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="TeleGphoto" />
+  
+  <!-- Performance Optimization -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="dns-prefetch" href="https://api.telegram.org" />
+  <link rel="preconnect" href="https://api.telegram.org" />
+  <link rel="preconnect" href="https://formspree.io" />
+  <link rel="prefetch" href="/icon.png" />
+  
+  <!-- Icons -->
   <link rel="icon" type="image/png" href="/icon.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="apple-touch-icon" href="/icon.png" />
+  
   <title>TeleGphoto — Your Personal Cloud</title>
-  <!-- Fallback for favicon if PNG fails -->
-  <link rel="icon" type="image/png" href="/icon.png" />
 </head>
 
-<body style="background-color: #000; margin: 0; overflow: hidden;">
+<body style="background-color: #000; margin: 0; overflow: hidden; padding: 0;">
   <div id="root"></div>
-  <!-- Formspree Widget -->
+  
+  <!-- Performance: Defer non-critical scripts -->
   <script src="https://formspree.io/js/formbutton-v1.min.js" defer></script>
   <script type="module" src="/src/main.tsx"></script>
+  
+  <!-- Prevent pinch-zoom issues on iOS -->
+  <script>
+    document.addEventListener('touchmove', function(event) {
+      if(event.touches.length > 1) {
+        event.preventDefault();
+      }
+    }, {passive: false});
+  </script>
 </body>
 
 </html>

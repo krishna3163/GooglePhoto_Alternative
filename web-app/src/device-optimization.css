@@ -1,0 +1,547 @@
+/* Device Optimization & Responsive Design */
+/* Universal responsive and device-friendly styles */
+
+/* ==================== ROOT & VISIBILITY ==================== */
+:root {
+    --safe-area-inset-top: max(env(safe-area-inset-top, 0px), 0px);
+    --safe-area-inset-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+    --safe-area-inset-left: max(env(safe-area-inset-left, 0px), 0px);
+    --safe-area-inset-right: max(env(safe-area-inset-right, 0px), 0px);
+    
+    /* Touch-friendly minimal sizes */
+    --touch-target-min: 44px;
+    --touch-target-lg: 48px;
+    --touch-target-xl: 56px;
+}
+
+/* ==================== UNIVERSAL OPTIMIZATIONS ==================== */
+
+* {
+    -webkit-tap-highlight-color: rgba(138, 180, 248, 0.2);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+input, textarea, button, select {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Prevent font size adjustments on landscape orientation change */
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* ==================== TEXT & TYPOGRAPHY OPTIMIZATIONS ==================== */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-size: clamp(13px, 2vw, 16px);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Readable text on all devices */
+p, span, div {
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* ==================== TOUCH-FRIENDLY UI ==================== */
+
+/* Minimum touch target size: 44x44px */
+button, a, input[type="button"], input[type="submit"],
+input[type="reset"], input[type="checkbox"], input[type="radio"],
+.clickable, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
+    border-radius: clamp(4px, 1vw, 8px);
+}
+
+/* Touch feedback */
+button:active, a:active, .clickable:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+}
+
+/* Remove input styling for better touch experience */
+input {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+textarea {
+    padding: clamp(8px, 2vw, 12px);
+    min-height: 44px;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+}
+
+/* ==================== RESPONSIVE PADDING & MARGINS ==================== */
+
+.safe-area-inset {
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: var(--safe-area-inset-bottom);
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
+}
+
+.safe-area-inset-top {
+    padding-top: var(--safe-area-inset-top);
+}
+
+.safe-area-inset-bottom {
+    padding-bottom: var(--safe-area-inset-bottom);
+}
+
+/* Dynamic spacing based on viewport */
+.container-padding {
+    padding: clamp(12px, 3vw, 24px);
+}
+
+.container-padding-lg {
+    padding: clamp(16px, 4vw, 32px);
+}
+
+.gap-small {
+    gap: clamp(8px, 2vw, 12px);
+}
+
+.gap-medium {
+    gap: clamp(12px, 2.5vw, 16px);
+}
+
+.gap-large {
+    gap: clamp(16px, 3vw, 24px);
+}
+
+/* ==================== SCROLLING & OVERFLOW ==================== */
+
+/* Smooth scrolling on touch devices */
+.scrollable {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    -webkit-appearance: none;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollable::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.scrollable::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+    background: rgba(138, 180, 248, 0.3);
+    border-radius: 3px;
+}
+
+.scrollable::-webkit-scrollbar-thumb:hover {
+    background: rgba(138, 180, 248, 0.5);
+}
+
+/* ==================== FLEX & GRID RESPONSIVE ==================== */
+
+.flex-responsive {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(8px, 2vw, 16px);
+}
+
+.grid-responsive {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: clamp(12px, 2vw, 20px);
+}
+
+.grid-responsive-sm {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: clamp(8px, 2vw, 12px);
+}
+
+/* ==================== IMAGE & MEDIA OPTIMIZATION ==================== */
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+/* Lazy loading support */
+img[loading="lazy"] {
+    background: linear-gradient(90deg, rgba(138, 180, 248, 0.1), rgba(52, 168, 224, 0.1));
+}
+
+video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+}
+
+/* ==================== CARD & MODAL OPTIMIZATION ==================== */
+
+.card, .modal-content, .container {
+    border-radius: clamp(8px, 2vw, 16px);
+    padding: clamp(12px, 3vw, 20px);
+    word-break: break-word;
+}
+
+.modal-overlay {
+    padding: clamp(12px, 2vw, 16px);
+}
+
+/* ==================== HEADER & NAVIGATION ==================== */
+
+header, nav {
+    padding: clamp(12px, 2.5vw, 16px) clamp(12px, 3vw, 24px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* Safe area for notched devices */
+header {
+    padding-top: calc(var(--safe-area-inset-top) + clamp(12px, 2.5vw, 16px));
+}
+
+/* ==================== MOBILE-FIRST RESPONSIVE BREAKPOINTS ==================== */
+
+/* Phones (320px - 480px) */
+@media (max-width: 480px) {
+    :root {
+        font-size: clamp(13px, 3.5vw, 15px);
+    }
+    
+    .container-padding,
+    .card,
+    .modal-content {
+        padding: clamp(10px, 2.5vw, 16px);
+    }
+    
+    .gap-small, .gap-medium { gap: 8px; }
+    .gap-large { gap: 12px; }
+    
+    button, a, .clickable {
+        padding: 10px 14px;
+        min-height: 44px;
+    }
+    
+    h1 { font-size: clamp(20px, 5vw, 24px); margin: 12px 0; }
+    h2 { font-size: clamp(18px, 4.5vw, 22px); margin: 10px 0; }
+    h3 { font-size: clamp(16px, 4vw, 20px); margin: 8px 0; }
+    h4 { font-size: clamp(14px, 3.5vw, 18px); margin: 6px 0; }
+    
+    .hide-mobile { display: none !important; }
+    .show-mobile { display: block !important; }
+    
+    .sidebar { 
+        width: 80vw !important;
+        max-width: 280px;
+    }
+    
+    .grid-responsive {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    }
+    
+    .grid-responsive-sm {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Landscape phone optimization */
+    @media (orientation: landscape) {
+        html, body, #root {
+            max-height: 100vh;
+        }
+        
+        .content {
+            max-height: calc(100vh - 80px);
+        }
+        
+        header { padding: 8px 12px; }
+        .hide-landscape { display: none !important; }
+    }
+}
+
+/* Tablets (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    :root {
+        font-size: clamp(14px, 2.5vw, 16px);
+    }
+    
+    h1 { font-size: 28px; }
+    h2 { font-size: 24px; }
+    h3 { font-size: 20px; }
+    h4 { font-size: 18px; }
+    
+    .container-padding { padding: clamp(14px, 2.5vw, 20px); }
+    
+    .grid-responsive {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    }
+    
+    .grid-responsive-sm {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .sidebar { width: 240px !important; }
+    
+    .hide-tablet { display: none !important; }
+}
+
+/* Small Laptops (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    :root {
+        font-size: 15px;
+    }
+    
+    h1 { font-size: 32px; }
+    h2 { font-size: 28px; }
+    h3 { font-size: 24px; }
+    h4 { font-size: 20px; }
+    
+    .grid-responsive {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    }
+    
+    .grid-responsive-sm {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .hide-small-desktop { display: none !important; }
+}
+
+/* Large Desktops (1025px+) */
+@media (min-width: 1025px) {
+    :root {
+        font-size: 16px;
+    }
+    
+    h1 { font-size: 36px; }
+    h2 { font-size: 32px; }
+    h3 { font-size: 28px; }
+    h4 { font-size: 24px; }
+    
+    .grid-responsive {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+    
+    .grid-responsive-sm {
+        grid-template-columns: repeat(6, 1fr);
+    }
+    
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+}
+
+/* Ultra-wide screens (1921px+) */
+@media (min-width: 1921px) {
+    .container {
+        max-width: 1800px;
+    }
+    
+    .grid-responsive {
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    }
+}
+
+/* ==================== DEVICE-SPECIFIC OPTIMIZATIONS ==================== */
+
+/* iOS Safari specific */
+@supports (-webkit-touch-callout: none) {
+    html {
+        padding-top: var(--safe-area-inset-top);
+        padding-bottom: var(--safe-area-inset-bottom);
+    }
+    
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"],
+    select {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Fix for iOS sticky positioning */
+    header, nav {
+        position: -webkit-sticky;
+        position: sticky;
+    }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+
+/* Focus indicators for keyboard navigation */
+button:focus,
+a:focus,
+input:focus,
+textarea:focus,
+select:focus {
+    outline: 2px solid var(--accent-blue, #8ab4f8);
+    outline-offset: 2px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #1a1c1e;
+        color: #e8eaed;
+    }
+}
+
+/* Light mode support */
+@media (prefers-color-scheme: light) {
+    body {
+        background: #ffffff;
+        color: #202124;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+    button, a {
+        border: 2px solid currentColor;
+    }
+}
+
+/* ==================== PRINTING ==================== */
+
+@media print {
+    .no-print, .sidebar, .navbar, footer {
+        display: none !important;
+    }
+    
+    .content {
+        padding: 0;
+        overflow: visible;
+    }
+    
+    body {
+        background: white;
+        color: black;
+    }
+}
+
+/* ==================== PERFORMANCE HINTS ==================== */
+
+/* Will-change must be used sparingly */
+.animate-gpu {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+}
+
+/* Image loading optimization */
+img {
+    content-visibility: auto;
+}
+
+/* Lazy-loadable containers */
+.lazy-container {
+    contain: layout style paint;
+}
+
+/* ==================== UTILITY CLASSES ==================== */
+
+.text-responsive {
+    font-size: clamp(14px, 2vw, 18px);
+    line-height: clamp(1.4, 2.5vw, 1.8);
+}
+
+.text-responsive-sm {
+    font-size: clamp(12px, 1.5vw, 14px);
+}
+
+.text-responsive-lg {
+    font-size: clamp(16px, 3vw, 24px);
+}
+
+.padding-responsive-h {
+    padding-left: clamp(12px, 3vw, 24px);
+    padding-right: clamp(12px, 3vw, 24px);
+}
+
+.padding-responsive-v {
+    padding-top: clamp(12px, 2.5vw, 20px);
+    padding-bottom: clamp(12px, 2.5vw, 20px);
+}
+
+.margin-responsive-h {
+    margin-left: clamp(8px, 2vw, 16px);
+    margin-right: clamp(8px, 2vw, 16px);
+}
+
+.fullwidth-responsive {
+    width: 100%;
+    max-width: 100vw;
+}
+
+.hide-overflow {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.truncate-lines-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.truncate-lines-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ==================== VIEWPORT-SPECIFIC VISIBILITY ==================== */
+
+.show-mobile { display: none; }
+.show-tablet { display: none; }
+.show-desktop { display: block; }
+
+@media (max-width: 768px) {
+    .show-mobile { display: block; }
+    .show-desktop { display: none; }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+    .show-tablet { display: block; }
+}
