@@ -138,6 +138,43 @@ Instead of using a bot, you can now use your **Telegram account directly** to st
 
 ---
 
+## 💎 Device Optimization & Universal Compatibility
+
+We've optimized TeleGphoto to work **perfectly on every device**! 
+
+### 📱 Works on Everything
+- **Mobile Phones** (iPhone, Samsung, Pixel, etc.)
+- **Tablets** (iPad, Android tablets)
+- **Laptops** (Windows, Mac, Linux)
+- **Desktops** (4K, ultra-wide displays)
+- **All Browsers** (Chrome, Safari, Firefox, Edge)
+
+### ⚡ Smart Responsive Design
+- **Automatic Layout Adjustment**: Changes based on your device size
+- **Touch-Friendly UI**: Large buttons (44x44px) perfect for phones
+- **Fast Loading**: Optimized for slow networks
+- **Smooth Scrolling**: Momentum scrolling on mobile
+- **Battery Efficient**: Minimal animations and effects
+
+### 🎯 Features by Device
+| Device | Features |
+|--------|----------|
+| 📱 Mobile | Vertical layouts, touch buttons, one-column grids |
+| 📱 Tablet | Dual layouts, improved spacing, two-column grids |
+| 💻 Laptop | Side-by-side views, hover effects, 3-4 column grids |
+| 🖥️ Desktop | Full features, advanced animations, 6+ column grids |
+
+### ♿ Accessibility First
+- ✅ Works with keyboard only (Tab + Enter)
+- ✅ Compatible with screen readers
+- ✅ Dark mode & high contrast support
+- ✅ Respects motion preferences
+
+### 📚 Learn More:
+👉 **[Read Device Optimization Guide →](./DEVICE_OPTIMIZATION_GUIDE.md)**
+
+---
+
 ## 🤝 Build With Us: Join the Revolution!
 We are making storage free for everyone. Whether you are a coding pro or just starting out, we need your help!
 
