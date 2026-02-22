@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Search, Upload, HelpCircle, Settings, FolderPlus, LogOut, Check, Edit3, Heart, BookOpen, Users, ExternalLink } from 'lucide-react';
+import { Search, Upload, HelpCircle, Settings, FolderPlus, LogOut, Check, Edit3, Heart, BookOpen, Users, ExternalLink, Shield } from 'lucide-react';
 import type { TelegramConfig } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Header.css';
@@ -97,10 +97,13 @@ const Header: React.FC<HeaderProps> = ({
                     onClick={handleLogoClick}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    title={devTapCount > 0 ? `Developer mode taps: ${devTapCount}/5` : 'Developer Tap Counter'}
+                    title={devTapCount > 0 ? `Developer mode taps: ${devTapCount}/5` : (config?.isDeveloperMode ? 'Developer mode ON (tap to toggle)' : 'Tap 5× to enable Developer mode')}
                 >
                     <img src="/icon.png" alt="TeleGphoto" className="logo-img" onError={(e) => (e.currentTarget.src = './logo.svg')} />
                     <span className="logo-text">TeleGphoto</span>
+                    {config?.isDeveloperMode && (
+                        <span className="dev-mode-badge" title="Developer mode">Dev</span>
+                    )}
                 </motion.div>
             </div>
 
@@ -195,6 +198,21 @@ const Header: React.FC<HeaderProps> = ({
                                     <Settings size={18} />
                                     <span>Settings</span>
                                 </div>
+
+                                {onDeveloperModeToggle && (
+                                    <div className="dropdown-item developer-mode-row">
+                                        <Shield size={18} />
+                                        <span>Developer mode</span>
+                                        <label className="header-dev-toggle" onClick={(e) => e.stopPropagation()}>
+                                            <input
+                                                type="checkbox"
+                                                checked={!!config?.isDeveloperMode}
+                                                onChange={(e) => onDeveloperModeToggle(e.target.checked)}
+                                            />
+                                            <span className="header-dev-slider" />
+                                        </label>
+                                    </div>
+                                )}
 
                                 <div className="dropdown-item" onClick={onDevClick}>
                                     <Users size={18} />

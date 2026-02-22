@@ -36,6 +36,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ config, onSave, onClose, 
             getBotInfo(token)
                 .then(info => setBotUsername(info.username))
                 .catch(() => setBotUsername(null));
+        } else {
+            setBotUsername(null);
         }
     }, [token]);
 
@@ -171,10 +173,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ config, onSave, onClose, 
                                     ) : (
                                         <div className="login-widget-container">
                                             {botUsername ? (
-                                                <TelegramLoginButton
-                                                    botUsername={botUsername}
-                                                    onAuth={handleTelegramAuth}
-                                                />
+                                                <>
+                                                    <TelegramLoginButton
+                                                        botUsername={botUsername}
+                                                        onAuth={handleTelegramAuth}
+                                                    />
+                                                    <p className="telegram-domain-hint">If the button does nothing, set your site domain in Telegram: message @BotFather → /setdomain → choose your bot → add this site’s domain.</p>
+                                                </>
                                             ) : (
                                                 <p className="token-hint">Please provide a valid Bot Token to enable Login.</p>
                                             )}

@@ -30,7 +30,25 @@ jobs:
         run: npm ls --depth=0
 
       - name: 🔧 Apply native patches
-        run: node scripts/fix-text-recognition.js
+        run: |
+          if [ -f scripts/fix-text-recognition.js ]; then
+            node scripts/fix-text-recognition.js
+          else
+            echo "No patch script, skipping."
+          fi
+
+      - name: 🔑 Setup release keystore or use debug signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+            echo "Using release keystore from secrets."
+          fi
+          if [ ! -f android/app/release.keystore ]; then
+            sed -i.bak 's/signingConfig signingConfigs.release/signingConfig signingConfigs.debug/' android/app/build.gradle
+            echo "No keystore — using debug signing for release build."
+          fi
 
       - name: 🔑 Grant execute permission for gradlew
         run: chmod +x android/gradlew
@@ -44,5 +62,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+          path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error

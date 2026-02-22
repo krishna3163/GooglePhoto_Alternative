@@ -234,6 +234,74 @@
     background-color: #3c4043;
 }
 
+.logo-container {
+    position: relative;
+}
+
+.dev-mode-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--accent-blue);
+    background: rgba(138, 180, 248, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+}
+
+.header .developer-mode-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: default;
+}
+
+.header-dev-toggle {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.header-dev-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.header-dev-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    transition: 0.3s;
+}
+
+.header-dev-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.header-dev-toggle input:checked + .header-dev-slider {
+    background-color: var(--accent-blue);
+}
+
+.header-dev-toggle input:checked + .header-dev-slider:before {
+    transform: translateX(16px);
+}
+
 /* Developer Section */
 .developer-section {
     padding: 10px 20px;

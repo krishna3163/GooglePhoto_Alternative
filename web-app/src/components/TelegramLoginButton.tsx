@@ -25,9 +25,22 @@ const TelegramLoginButton: React.FC<TelegramLoginButtonProps> = ({
     showUserPhoto = true,
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const onAuthRef = useRef(onAuth);
+    onAuthRef.current = onAuth;
 
     useEffect(() => {
-        window.onTelegramAuth = (user: TelegramUser) => onAuth(user);
+        window.onTelegramAuth = (user: TelegramUser) => {
+            try {
+                onAuthRef.current(user);
+            } catch (e) {
+                console.error('Telegram auth callback error:', e);
+            }
+        };
+
+        if (!botUsername || !containerRef.current) return;
+
+        const container = containerRef.current;
+        container.innerHTML = '';
 
         const script = document.createElement('script');
         script.src = 'https://telegram.org/js/telegram-widget.js?22';
@@ -43,17 +56,12 @@ const TelegramLoginButton: React.FC<TelegramLoginButtonProps> = ({
         }
         script.async = true;
 
-        if (containerRef.current) {
-            containerRef.current.innerHTML = '';
-            containerRef.current.appendChild(script);
-        }
+        container.appendChild(script);
 
         return () => {
-            if (containerRef.current) {
-                containerRef.current.innerHTML = '';
-            }
+            container.innerHTML = '';
         };
-    }, [botUsername, onAuth, buttonSize, cornerRadius, requestAccess, showUserPhoto]);
+    }, [botUsername, buttonSize, cornerRadius, requestAccess, showUserPhoto]);
 
     return <div ref={containerRef} className="telegram-login-button-container" />;
 };
