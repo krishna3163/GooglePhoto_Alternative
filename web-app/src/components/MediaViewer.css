@@ -1,0 +1,223 @@
+.viewer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #000;
+    z-index: 3000;
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.viewer-header {
+    height: 64px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(rgba(0, 0, 0, 0.6), transparent);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 3010;
+}
+
+.viewer-left,
+.viewer-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.viewer-icon-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.viewer-icon-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.viewer-icon-btn.delete-btn:hover {
+    background-color: rgba(234, 67, 53, 0.2);
+    color: #ea4335;
+}
+
+.viewer-title-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.display-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.viewer-filename {
+    font-size: 16px;
+    font-weight: 500;
+    color: white;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.edit-icon-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.edit-icon-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.edit-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.edit-name-row input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--accent-blue);
+    color: white;
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    outline: none;
+}
+
+.save-edit-btn {
+    background: var(--accent-blue);
+    border: none;
+    color: black;
+    border-radius: 4px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.viewer-date {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.viewer-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 64px 24px;
+}
+
+.viewer-pdf-container {
+    width: 90%;
+    height: 80vh;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.pdf-embed {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.viewer-media {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+}
+
+
+.viewer-document {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    color: white;
+}
+
+.viewer-doc-name {
+    font-size: 20px;
+    color: #e3e3e3;
+    max-width: 500px;
+    text-align: center;
+}
+
+.view-pdf-btn {
+    background-color: var(--accent-blue);
+    color: black;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.view-pdf-btn:hover {
+    transform: scale(1.05);
+}
+
+.viewer-ocr-panel {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    background: rgba(30, 31, 32, 0.9);
+    backdrop-filter: blur(10px);
+    width: 320px;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    color: white;
+    animation: slideInOCR 0.3s ease-out;
+}
+
+@keyframes slideInOCR {
+    from {
+        transform: translateX(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.viewer-ocr-panel h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.viewer-ocr-panel p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #e3e3e3;
+}

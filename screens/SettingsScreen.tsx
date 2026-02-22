@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, useColorScheme, ActivityIndicator, Alert, ScrollView, Switch, useWindowDimensions } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, useColorScheme, ActivityIndicator, Alert, ScrollView, Switch, useWindowDimensions, Linking } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { saveTelegramConfig, getTelegramConfig } from '../services/storage';
 import { uploadFileToTelegram } from '../services/telegramService';
@@ -228,6 +228,12 @@ export default function SettingsScreen() {
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.linkRow} onPress={() => router.push('/about')}>
                                 <Text style={[styles.linkText, { color: theme.text }]}>About App</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.linkRow} onPress={() => Linking.openURL('https://github.com/krishna3163')}>
+                                <Text style={[styles.linkText, { color: theme.text }]}>Developer Profile</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.linkRow} onPress={() => Linking.openURL('https://formspree.io/f/xeelrpdd')}>
+                                <Text style={[styles.linkText, { color: theme.text }]}>Report a Bug</Text>
                             </TouchableOpacity>
                         </View>
 

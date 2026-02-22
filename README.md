@@ -21,34 +21,59 @@ Imagine you have a giant, magical backpack (that's **Telegram**). You can put al
 
 ---
 
-## �️ How to set it up? (Even a kid can do it!)
+## 🛠 Telegram Setup (The Real Magic Behind the Scenes)
 
-To make the magic work, you need to tell our app where your "Magical Backpack" is. Follow these simple steps:
+To unlock cloud backup, you need to connect the app with your personal Telegram storage. Don’t worry — it only takes a few minutes.
 
-### 🤖 Step 1: Create your Robot Helper (Bot Token)
-Think of a Bot Token as a **"Secret Password"** for your robot.
-1. Open Telegram and search for **@BotFather** (He is the king of all robots!).
-2. Tap **Start** and type `/newbot`.
-3. Give your robot a name (like "MyPhotoBot").
-4. Give it a username that ends in "bot" (like `MagicBackpack_bot`).
-5. **Success!** BotFather will give you a long string of letters and numbers. That's your **Bot Token**. Copy it!
+### 🤖 Step 1 — Create your Robot Helper (Bot Token)
+Your bot is the messenger that uploads files to Telegram.
+1. Open Telegram and search for **@BotFather**.
+2. Tap **Start**.
+3. Type `/newbot`.
+4. Enter a name for your bot.
+5. Enter a username that ends with `bot` (Example: `MagicBackpack_bot`).
+6. BotFather will send your **Bot Token** (Example: `123456789:AAExampleBotToken`).
+7. 👉 **Copy this token and keep it safe.**
 
-### 🏰 Step 2: Create your Secret Vault (Chat ID)
-The Chat ID is like the **"Address"** of your secret room.
-1. Create a **New Channel** in Telegram. Make it **Private**.
-2. Give it a cool name like "My Secret Vault."
-3. Add the robot you just created (the one from Step 1) as an **Administrator** to this channel.
-4. Now, we need the address. Send a quick message like "Hello" in that channel.
-5. Forward that message to **@IDBot** or search for **@MissRose_bot** and type `/id` inside your channel.
-6. It will give you a number (usually starting with a `-`). That is your **Chat ID**. Copy it!
+### 🏰 Step 2 — Create your Secret Vault (Private Channel)
+This channel will act as your personal cloud storage.
+1. Open Telegram → **New Channel**.
+2. Choose **Private Channel**.
+3. Give it a name (example: `My Secret Vault`).
+4. Create the channel.
 
-### 🔑 Step 3: Start the Magic
-1. Open the **TelePhoto Cloud** app on your phone.
+### ➕ Step 3 — Add the Bot to Your Vault
+1. Open the channel.
+2. Tap **Channel Info** → **Administrators**.
+3. Tap **Add Admin**.
+4. Search your bot and add it.
+5. Allow **Post Messages** permission.
+   *Now your robot can store files.*
+
+### 🆔 Step 4 — Get Your Chat ID (Vault Address)
+1. Open the channel.
+2. Send a message like: `hello`.
+3. Open this link in your browser: `https://api.telegram.org/bot<TOKEN>/getUpdates` (Replace `<TOKEN>` with your bot token).
+   - Example: `https://api.telegram.org/bot123456:ABCDEF/getUpdates`
+4. 🔎 **Find Chat ID in Response**: You will see JSON like:
+   ```json
+   {
+     "chat": {
+       "id": -1001234567890,
+       "title": "My Secret Vault"
+     }
+   }
+   ```
+5. 👉 The `"id"` value is your **Chat ID**. (Negative numbers are normal for channels).
+
+### 🔑 Final Step — Connect the App
+1. Open the **TelePhoto Cloud** app (or Web App).
 2. Go to **Settings**.
-3. Paste the **Bot Token** and the **Chat ID** into the boxes.
-4. Tap **Save** and you're done! Your robot is now ready to start packing your bags! 🎒
+3. Paste the **Bot Token** and the **Chat ID**.
+4. Tap **Save** and start syncing! 🚀
 
 ---
+
 
 ## �📈 Project Growth
 ![Commit Activity](https://img.shields.io/github/commit-activity/m/krishna3163/GooglePhoto_Alternative)
@@ -118,5 +143,18 @@ This project is under the **MIT License**. It's free to use and open for everyon
 
 ---
 
+## 🌐 TelePhoto Web (NEW!)
+We now have a beautiful web interface that looks and feel exactly like **Google Photos**!
+
+### Key Features:
+- **Premium UI**: Dark mode, masonry grid, and smooth animations.
+- **Web Uploads**: Upload from your PC directly to Telegram.
+- **Search & OCR**: Find your photos via text search.
+
+Check it out in the `/web-app` directory! 🚀
+
+---
+
 ## 🌟 Support the Project
 Love this idea? Give us a ⭐️ on GitHub! It makes us happy and helps more people find the app.
+
