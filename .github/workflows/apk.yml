@@ -53,10 +53,15 @@ jobs:
       - name: 🔑 Grant execute permission for gradlew
         run: chmod +x android/gradlew
 
+      - name: 📁 Verify android and node_modules
+        run: |
+          test -d android || (echo "android folder missing" && exit 1)
+          test -d node_modules || (echo "node_modules missing" && exit 1)
+
       - name: 🔨 Build APK (Release)
         run: |
           cd android
-          ./gradlew assembleRelease --stacktrace --info --warning-mode all
+          ./gradlew assembleRelease -Dorg.gradle.jvmargs="-Xmx2048m -Dfile.encoding=UTF-8" --stacktrace --no-daemon
 
       - name: 📤 Upload APK Artifact
         uses: actions/upload-artifact@v4

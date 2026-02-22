@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import type { TelegramConfig, PhotoAsset } from '../types';
+import type { LayoutMode } from '../utils/storage';
 import { FileText, Play, Star } from 'lucide-react';
 import './PhotoGrid.css';
 
@@ -9,9 +10,10 @@ interface PhotoGridProps {
     searchQuery: string;
     title: string;
     onPhotoClick: (photo: PhotoAsset) => void;
+    layoutMode?: LayoutMode;
 }
 
-const PhotoGrid: React.FC<PhotoGridProps> = ({ config, photos, searchQuery, title, onPhotoClick }) => {
+const PhotoGrid: React.FC<PhotoGridProps> = ({ config, photos, searchQuery, title, onPhotoClick, layoutMode = 'grid' }) => {
     if (!config) {
         return (
             <div className="empty-state">
@@ -101,31 +103,52 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ config, photos, searchQuery, titl
         }
     };
 
+    const isList = layoutMode === 'list';
+
     return (
-        <div className="photo-grid-container">
+        <div className={`photo-grid-container ${isList ? 'layout-list' : 'layout-grid'}`}>
             <div className="grid-header">
                 <h2 className="grid-title">{title}</h2>
             </div>
             {Object.keys(groupedPhotos).map((date) => (
                 <div key={date} className="date-group">
                     <h3 className="group-date">{date}</h3>
-                    <div className="photo-grid">
+                    <div className={isList ? 'photo-list' : 'photo-grid'}>
                         {groupedPhotos[date].map((photo) => (
-                            <div
-                                key={photo.id}
-                                className={`photo-item ${photo.mediaType}-item`}
-                                onClick={() => onPhotoClick(photo)}
-                            >
-                                {renderMedia(photo)}
-                                <div className="item-overlay">
-                                    <span className="file-info">{photo.fileName}</span>
+                            isList ? (
+                                <div
+                                    key={photo.id}
+                                    className="photo-list-row"
+                                    onClick={() => onPhotoClick(photo)}
+                                >
+                                    <div className={`photo-item list-thumb ${photo.mediaType}-item`}>
+                                        {renderMedia(photo)}
+                                    </div>
+                                    <div className="list-info">
+                                        <span className="list-filename">{photo.fileName}</span>
+                                        <span className="list-meta">{photo.mediaType} · {new Date(photo.timestamp).toLocaleString()}</span>
+                                    </div>
                                     {photo.isFavourite && (
-                                        <div className="fav-indicator">
-                                            <Star size={14} fill="#8ab4f8" color="#8ab4f8" />
-                                        </div>
+                                        <Star size={16} fill="#8ab4f8" color="#8ab4f8" className="list-fav" />
                                     )}
                                 </div>
-                            </div>
+                            ) : (
+                                <div
+                                    key={photo.id}
+                                    className={`photo-item ${photo.mediaType}-item`}
+                                    onClick={() => onPhotoClick(photo)}
+                                >
+                                    {renderMedia(photo)}
+                                    <div className="item-overlay">
+                                        <span className="file-info">{photo.fileName}</span>
+                                        {photo.isFavourite && (
+                                            <div className="fav-indicator">
+                                                <Star size={14} fill="#8ab4f8" color="#8ab4f8" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )
                         ))}
                     </div>
                 </div>

@@ -12,7 +12,22 @@
 .header-left {
     display: flex;
     align-items: center;
-    min-width: 250px;
+    gap: 8px;
+    min-width: 0;
+}
+
+.header-menu-btn {
+    display: none;
+}
+
+@media (max-width: 480px) {
+    .header-menu-btn {
+        display: flex;
+        flex-shrink: 0;
+    }
+    .header-left .logo-container .logo-text {
+        font-size: 18px;
+    }
 }
 
 .logo-container {
@@ -75,6 +90,17 @@
     color: var(--text-secondary);
 }
 
+.layout-toggle {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.layout-btn.active {
+    color: var(--accent-blue);
+    background: rgba(138, 180, 248, 0.15);
+}
+
 .header-right {
     display: flex;
     align-items: center;
@@ -86,12 +112,25 @@
 .icon-button {
     width: 40px;
     height: 40px;
+    min-width: 40px;
+    min-height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     color: var(--text-primary);
+    border: none;
+    background: transparent;
+}
+
+@media (max-width: 480px) {
+    .icon-button {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+    }
 }
 
 .icon-button-link {

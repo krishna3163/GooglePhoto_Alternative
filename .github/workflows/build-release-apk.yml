@@ -29,6 +29,12 @@ jobs:
       - name: ✅ Verify npm dependencies
         run: npm ls --depth=0
 
+      - name: 📁 Verify android and node_modules
+        run: |
+          ls -la android || true
+          ls -la android/react-settings-plugin 2>/dev/null || echo "react-settings-plugin not found"
+          test -d node_modules && echo "node_modules OK" || (echo "node_modules missing" && exit 1)
+
       - name: 🔧 Apply native patches
         run: |
           if [ -f scripts/fix-text-recognition.js ]; then
@@ -65,8 +71,8 @@ jobs:
         run: |
           cd android
           ./gradlew assembleRelease \
-            -Dorg.gradle.jvmargs="-Xmx2048m" \
-            --stacktrace --info
+            -Dorg.gradle.jvmargs="-Xmx2048m -Dfile.encoding=UTF-8" \
+            --stacktrace --no-daemon
           ls -lh app/build/outputs/apk/release/
 
       - name: 📤 Upload Release APK

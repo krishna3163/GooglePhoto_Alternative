@@ -1,62 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Github, Linkedin, Mail, ExternalLink, Award, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import './DeveloperProfile.css';
+
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xeelrpdd';
 
 interface DeveloperProfileProps {
     onClose: () => void;
 }
 
-declare global {
-    interface Window {
-        formbutton?: (action: string, config: any) => void;
-    }
-}
-
 const DeveloperProfile: React.FC<DeveloperProfileProps> = ({ onClose }) => {
-    useEffect(() => {
-        // Initialize formbutton widget
-        if (window.formbutton) {
-            window.formbutton('create', {
-                action: 'https://formspree.io/f/xeelrpdd',
-                title: 'Report Issues / Bugs',
-                fields: [
-                    {
-                        type: 'email',
-                        label: 'Email:',
-                        name: 'email',
-                        required: true,
-                        placeholder: 'your@email.com'
-                    },
-                    {
-                        type: 'textarea',
-                        label: 'Message:',
-                        name: 'message',
-                        placeholder: 'Describe the issue or bug...',
-                        required: true
-                    },
-                    { type: 'submit' }
-                ],
-                styles: {
-                    title: {
-                        backgroundColor: '#8ab4f8',
-                        color: '#1a1c1e',
-                        fontSize: '18px'
-                    },
-                    button: {
-                        backgroundColor: '#8ab4f8',
-                        color: '#1a1c1e',
-                        fontSize: '14px'
-                    },
-                    field: {
-                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '8px'
-                    }
-                }
-            });
-        }
-    }, []);
+    const [submitted, setSubmitted] = useState(false);
     return (
         <motion.div
             className="dev-profile-overlay"
@@ -163,8 +117,50 @@ const DeveloperProfile: React.FC<DeveloperProfileProps> = ({ onClose }) => {
                                 <ExternalLink size={20} />
                                 <h3>Report Issues / Bugs</h3>
                             </div>
-                            <p style={{ color: '#9aa0a6', fontSize: '14px', marginBottom: '16px' }}>Click the button below to report bugs using Formspree:</p>
-                            <div id="formspree-widget"></div>
+                            <p style={{ color: '#9aa0a6', fontSize: '14px', marginBottom: '16px' }}>Submit the form below. Data is sent via Formspree (POST).</p>
+                            {submitted ? (
+                                <div className="formspree-success">
+                                    <p>Thanks! Your message was sent. We&apos;ll get back to you soon.</p>
+                                </div>
+                            ) : (
+                                <form
+                                    className="formspree-form"
+                                    method="POST"
+                                    action={FORMSPREE_ENDPOINT}
+                                    onSubmit={async (e) => {
+                                        e.preventDefault();
+                                        const form = e.currentTarget;
+                                        const body = new FormData(form);
+                                        try {
+                                            const res = await fetch(FORMSPREE_ENDPOINT, { method: 'POST', body });
+                                            if (res.ok) setSubmitted(true);
+                                            else form.reportValidity();
+                                        } catch {
+                                            form.reportValidity();
+                                        }
+                                    }}
+                                >
+                                    <input type="hidden" name="_subject" value="TeleGphoto Bug Report" />
+                                    <label htmlFor="formspree-email">Email</label>
+                                    <input
+                                        id="formspree-email"
+                                        type="email"
+                                        name="email"
+                                        placeholder="your@email.com"
+                                        required
+                                        autoComplete="email"
+                                    />
+                                    <label htmlFor="formspree-message">Message</label>
+                                    <textarea
+                                        id="formspree-message"
+                                        name="message"
+                                        placeholder="Describe the issue or bug..."
+                                        required
+                                        rows={4}
+                                    />
+                                    <button type="submit" className="formspree-submit">Send</button>
+                                </form>
+                            )}
                         </section>
                     </div>
                 </div>

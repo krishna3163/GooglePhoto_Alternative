@@ -18,9 +18,15 @@ interface SidebarProps {
     activeTab: string;
     setActiveTab: (tab: string) => void;
     isDeveloperMode?: boolean;
+    isOpen?: boolean;
+    onClose?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isDeveloperMode }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isDeveloperMode, isOpen, onClose }) => {
+    const handleItemClick = (tab: string) => {
+        setActiveTab(tab);
+        onClose?.();
+    };
     const menuItems = [
         { icon: <Image size={20} />, label: 'Photos' },
         { icon: <Clock size={20} />, label: 'Recently added' },
@@ -42,51 +48,54 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isDeveloperM
     ];
 
     return (
-        <aside className="sidebar">
-            <div className="sidebar-section">
-                {menuItems.map((item) => (
-                    <div
-                        key={item.label}
-                        className={`sidebar-item ${activeTab === item.label ? 'active' : ''}`}
-                        onClick={() => setActiveTab(item.label)}
-                    >
-                        {item.icon}
-                        <span>{item.label}</span>
-                    </div>
-                ))}
-            </div>
-
-            <div className="sidebar-group">
-                <div className="sidebar-group-header">
-                    <span>Collections</span>
-                    <ChevronDown size={16} />
+        <>
+            {isOpen && <div className="sidebar-backdrop" onClick={onClose} aria-hidden="true" />}
+            <aside className={`sidebar ${isOpen ? 'active' : ''}`}>
+                <div className="sidebar-section">
+                    {menuItems.map((item) => (
+                        <div
+                            key={item.label}
+                            className={`sidebar-item ${activeTab === item.label ? 'active' : ''}`}
+                            onClick={() => handleItemClick(item.label)}
+                        >
+                            {item.icon}
+                            <span>{item.label}</span>
+                        </div>
+                    ))}
                 </div>
-                {collectionItems.map((item) => (
-                    <div
-                        key={item.label}
-                        className={`sidebar-item ${activeTab === item.label ? 'active' : ''}`}
-                        onClick={() => setActiveTab(item.label)}
-                    >
-                        <div className="indent" />
-                        {item.icon}
-                        <span>{item.label}</span>
-                    </div>
-                ))}
-            </div>
 
-            <div className="sidebar-section">
-                {moreItems.map((item) => (
-                    <div
-                        key={item.label}
-                        className={`sidebar-item ${activeTab === item.label ? 'active' : ''}`}
-                        onClick={() => setActiveTab(item.label)}
-                    >
-                        {item.icon}
-                        <span>{item.label}</span>
+                <div className="sidebar-group">
+                    <div className="sidebar-group-header">
+                        <span>Collections</span>
+                        <ChevronDown size={16} />
                     </div>
-                ))}
-            </div>
-        </aside>
+                    {collectionItems.map((item) => (
+                        <div
+                            key={item.label}
+                            className={`sidebar-item ${activeTab === item.label ? 'active' : ''}`}
+                            onClick={() => handleItemClick(item.label)}
+                        >
+                            <div className="indent" />
+                            {item.icon}
+                            <span>{item.label}</span>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="sidebar-section">
+                    {moreItems.map((item) => (
+                        <div
+                            key={item.label}
+                            className={`sidebar-item ${activeTab === item.label ? 'active' : ''}`}
+                            onClick={() => handleItemClick(item.label)}
+                        >
+                            {item.icon}
+                            <span>{item.label}</span>
+                        </div>
+                    ))}
+                </div>
+            </aside>
+        </>
     );
 };
 

@@ -312,6 +312,73 @@
     }
 }
 
+/* Formspree form (POST, action, name attributes) */
+.formspree-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+}
+
+.formspree-form label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.formspree-form input,
+.formspree-form textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text-primary);
+    font-size: 14px;
+    width: 100%;
+    min-height: 44px;
+    box-sizing: border-box;
+}
+
+.formspree-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.formspree-form input:focus,
+.formspree-form textarea:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+.formspree-submit {
+    background: var(--accent-blue);
+    color: #1a1c1e;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    transition: opacity 0.2s;
+}
+
+.formspree-submit:hover {
+    opacity: 0.9;
+}
+
+.formspree-success {
+    padding: 16px;
+    background: rgba(138, 180, 248, 0.1);
+    border: 1px solid rgba(138, 180, 248, 0.3);
+    border-radius: 12px;
+    color: var(--accent-blue);
+}
+
+.formspree-success p {
+    margin: 0;
+    font-size: 14px;
+}
+
 /* Bug Report Section Styles */
 .bug-form {
     display: flex;

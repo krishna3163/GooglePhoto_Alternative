@@ -13,46 +13,58 @@ import TelegramManager from './components/TelegramManager';
 import { uploadFileToTelegram, getFileDownloadUrl, deleteTelegramMessage } from './services/telegramService';
 import { extractTextFromImage } from './services/ocrService';
 import type { TelegramConfig, PhotoAsset, UploadItem } from './types';
+import { getStoredConfig, getStoredUserName, getStoredPhotos, getStoredLayout, setStoredLayout, setCredentialsCookie } from './utils/storage';
+import type { LayoutMode } from './utils/storage';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 
+function parseConfig(): TelegramConfig | null {
+  try {
+    const s = getStoredConfig();
+    return s ? JSON.parse(s) : null;
+  } catch {
+    return null;
+  }
+}
+
+function parsePhotos(): PhotoAsset[] {
+  try {
+    const s = getStoredPhotos();
+    return s ? JSON.parse(s) : [];
+  } catch {
+    return [];
+  }
+}
+
 const App: React.FC = () => {
-  const [config, setConfig] = useState<TelegramConfig | null>(null);
+  const [config, setConfig] = useState<TelegramConfig | null>(parseConfig);
   const [showSettings, setShowSettings] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [showDevProfile, setShowDevProfile] = useState(false);
-  const [photos, setPhotos] = useState<PhotoAsset[]>([]);
+  const [photos, setPhotos] = useState<PhotoAsset[]>(parsePhotos);
   const [activeTab, setActiveTab] = useState('Photos');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPhoto, setSelectedPhoto] = useState<PhotoAsset | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState('Krishna');
+  const [userName, setUserName] = useState(() => getStoredUserName() || 'Krishna');
   const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([]);
   const [showQueue, setShowQueue] = useState(false);
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>(getStoredLayout);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const savedConfig = localStorage.getItem('telegram_config');
-    if (savedConfig) {
-      setConfig(JSON.parse(savedConfig));
-    } else {
+    if (!config) {
       setShowSettings(true);
       setShowGuide(true);
     }
-
-    const savedPhotos = localStorage.getItem('uploaded_photos');
-    if (savedPhotos) {
-      setPhotos(JSON.parse(savedPhotos));
-    }
-
-    const savedName = localStorage.getItem('user_name');
-    if (savedName) setUserName(savedName);
-
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 4500);
-
+    const timer = setTimeout(() => setLoading(false), 4500);
     return () => clearTimeout(timer);
   }, []);
+
+  const handleLayoutChange = (mode: LayoutMode) => {
+    setLayoutMode(mode);
+    setStoredLayout(mode);
+  };
 
   // Worker Pool logic
   useEffect(() => {
@@ -155,6 +167,7 @@ const App: React.FC = () => {
 
   const handleSaveConfig = (newConfig: TelegramConfig) => {
     localStorage.setItem('telegram_config', JSON.stringify(newConfig));
+    setCredentialsCookie(true);
     setConfig(newConfig);
     setShowSettings(false);
   };
@@ -246,6 +259,8 @@ const App: React.FC = () => {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             isDeveloperMode={config?.isDeveloperMode}
+            isOpen={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
           />
           <div className="main-wrapper">
             <Header
@@ -258,6 +273,10 @@ const App: React.FC = () => {
               onDevClick={() => setShowDevProfile(true)}
               onFilesSelected={handleFilesSelected}
               onDeveloperModeToggle={handleDeveloperModeToggle}
+              layoutMode={layoutMode}
+              onLayoutChange={handleLayoutChange}
+              showLayoutToggle={activeTab !== 'Messages' && activeTab !== 'Telegram'}
+              onMenuClick={() => setSidebarOpen(true)}
             />
             <motion.main
               className="content"
@@ -276,6 +295,7 @@ const App: React.FC = () => {
                   searchQuery={searchQuery}
                   title={activeTab}
                   onPhotoClick={setSelectedPhoto}
+                  layoutMode={layoutMode}
                 />
               )}
             </motion.main>

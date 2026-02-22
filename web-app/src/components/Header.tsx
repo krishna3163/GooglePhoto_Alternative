@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Search, Upload, HelpCircle, Settings, FolderPlus, LogOut, Check, Edit3, Heart, BookOpen, Users, ExternalLink, Shield } from 'lucide-react';
+import { Search, Upload, HelpCircle, Settings, FolderPlus, LogOut, Check, Edit3, Heart, BookOpen, Users, ExternalLink, Shield, LayoutGrid, List, Menu } from 'lucide-react';
 import type { TelegramConfig } from '../types';
+import type { LayoutMode } from '../utils/storage';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Header.css';
 
@@ -14,6 +15,10 @@ interface HeaderProps {
     onDevClick: () => void;
     onFilesSelected: (files: FileList) => void;
     onDeveloperModeToggle?: (enabled: boolean) => void;
+    layoutMode?: LayoutMode;
+    onLayoutChange?: (mode: LayoutMode) => void;
+    showLayoutToggle?: boolean;
+    onMenuClick?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -25,7 +30,11 @@ const Header: React.FC<HeaderProps> = ({
     onHelpClick,
     onDevClick,
     onFilesSelected,
-    onDeveloperModeToggle
+    onDeveloperModeToggle,
+    layoutMode = 'grid',
+    onLayoutChange,
+    showLayoutToggle = false,
+    onMenuClick
 }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const folderInputRef = useRef<HTMLInputElement>(null);
@@ -92,6 +101,18 @@ const Header: React.FC<HeaderProps> = ({
     return (
         <header className="header">
             <div className="header-left">
+                {onMenuClick && (
+                    <motion.button
+                        type="button"
+                        className="icon-button header-menu-btn"
+                        title="Menu"
+                        onClick={onMenuClick}
+                        whileTap={{ scale: 0.9 }}
+                        aria-label="Open menu"
+                    >
+                        <Menu size={22} />
+                    </motion.button>
+                )}
                 <motion.div
                     className="logo-container"
                     onClick={handleLogoClick}
@@ -141,6 +162,29 @@ const Header: React.FC<HeaderProps> = ({
                 <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="icon-button" title="Upload Folder" onClick={handleFolderClick}>
                     <FolderPlus size={20} />
                 </motion.div>
+
+                {showLayoutToggle && onLayoutChange && (
+                    <div className="layout-toggle" role="group" aria-label="View layout">
+                        <motion.button
+                            type="button"
+                            className={`icon-button layout-btn ${layoutMode === 'grid' ? 'active' : ''}`}
+                            title="Grid view"
+                            onClick={() => onLayoutChange('grid')}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            <LayoutGrid size={20} />
+                        </motion.button>
+                        <motion.button
+                            type="button"
+                            className={`icon-button layout-btn ${layoutMode === 'list' ? 'active' : ''}`}
+                            title="List view"
+                            onClick={() => onLayoutChange('list')}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            <List size={20} />
+                        </motion.button>
+                    </div>
+                )}
 
                 <motion.div
                     whileHover={{ scale: 1.1 }}
