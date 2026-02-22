@@ -8,11 +8,23 @@ export interface TelegramUser {
     hash: string;
 }
 
+export interface TelegramSession {
+    sessionId: string;
+    userId: number;
+    phoneNumber: string;
+    accessHash?: string;
+    encryptedSession: string; // Encrypted session data
+    createdAt: number;
+    isActive: boolean;
+}
+
 export interface TelegramConfig {
     token: string;
     chatId: string;
     isDeveloperMode?: boolean;
     telegramUser?: TelegramUser | null;
+    storageModel?: 'model1' | 'model3'; // 'model1' = Bot-based (default), 'model3' = Account-based
+    model3Session?: TelegramSession | null; // For MTProto account login
 }
 
 export interface PhotoAsset {

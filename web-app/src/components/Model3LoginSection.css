@@ -1,0 +1,264 @@
+/* Model 3 Login Section Styles */
+
+.model3-login-section {
+    padding: 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(138, 180, 248, 0.1) 0%, rgba(52, 168, 224, 0.05) 100%);
+    border: 1px solid rgba(138, 180, 248, 0.3);
+    margin: 20px 0;
+}
+
+.model3-header {
+    margin-bottom: 20px;
+}
+
+.model3-header h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #8ab4f8, #34a8e0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.model3-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #9aa0a6;
+}
+
+.model3-alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.model3-alert.error {
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    color: #ef5350;
+}
+
+.model3-alert error svg {
+    color: #ef5350;
+    flex-shrink: 0;
+}
+
+.model3-alert.success {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    color: #66bb6a;
+}
+
+.model3-alert.success svg {
+    color: #66bb6a;
+    flex-shrink: 0;
+}
+
+.model3-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.model3-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.model3-form label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e8eaed;
+}
+
+.model3-form input {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.model3-form input:focus {
+    outline: none;
+    border-color: #8ab4f8;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(138, 180, 248, 0.1);
+}
+
+.model3-form input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.model3-form small {
+    font-size: 12px;
+    color: #9aa0a6;
+}
+
+.model3-info-box {
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: rgba(52, 168, 224, 0.1);
+    border: 1px solid rgba(52, 168, 224, 0.3);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: #81c7f5;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.model3-info-box svg {
+    color: #34a8e0;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.model3-info-box.warning {
+    background: rgba(251, 192, 45, 0.1);
+    border-color: rgba(251, 192, 45, 0.3);
+    color: #fcb457;
+}
+
+.model3-info-box.warning svg {
+    color: #fbc02d;
+}
+
+.model3-btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #8ab4f8, #34a8e0);
+    color: #1a1c1e;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.model3-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(138, 180, 248, 0.3);
+}
+
+.model3-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.model3-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.model3-btn.logout {
+    background: linear-gradient(135deg, #ef5350, #e53935);
+}
+
+.model3-btn.logout:hover:not(:disabled) {
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.model3-logged-in {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.session-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.session-info .check-icon {
+    color: #66bb6a;
+    flex-shrink: 0;
+}
+
+.session-details {
+    flex: 1;
+}
+
+.session-details h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e8eaed;
+}
+
+.session-details p {
+    margin: 0;
+    font-size: 13px;
+    color: #9aa0a6;
+}
+
+.session-date {
+    font-size: 12px !important;
+    color: #7f8b9a !important;
+    margin-top: 4px !important;
+}
+
+@media (max-width: 768px) {
+    .model3-login-section {
+        padding: 16px;
+        margin: 16px 0;
+    }
+
+    .model3-header h3 {
+        font-size: 16px;
+    }
+
+    .session-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .session-info .check-icon {
+        align-self: center;
+        width: 100%;
+        text-align: center;
+    }
+}

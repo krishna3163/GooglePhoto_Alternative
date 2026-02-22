@@ -221,6 +221,14 @@ const App: React.FC = () => {
     return basePhotos;
   };
 
+  const handleDeveloperModeToggle = (enabled: boolean) => {
+    if (config) {
+      const updatedConfig = { ...config, isDeveloperMode: enabled };
+      setConfig(updatedConfig);
+      localStorage.setItem('telegram_config', JSON.stringify(updatedConfig));
+    }
+  };
+
   return (
     <AnimatePresence mode="wait">
       {loading ? (
@@ -249,6 +257,7 @@ const App: React.FC = () => {
               onHelpClick={() => setShowGuide(true)}
               onDevClick={() => setShowDevProfile(true)}
               onFilesSelected={handleFilesSelected}
+              onDeveloperModeToggle={handleDeveloperModeToggle}
             />
             <motion.main
               className="content"

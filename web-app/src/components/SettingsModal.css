@@ -257,3 +257,68 @@ input:checked+.slider:before {
 .primary-btn:hover {
     opacity: 0.9;
 }
+
+/* Storage Model Selector */
+.storage-model-selector {
+    margin: 20px 0;
+    padding: 16px;
+    background: rgba(138, 180, 248, 0.05);
+    border: 1px solid rgba(138, 180, 248, 0.2);
+    border-radius: 12px;
+}
+
+.selector-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    color: var(--accent-blue);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.model-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.model-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.model-option:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(138, 180, 248, 0.3);
+}
+
+.model-option input[type="radio"] {
+    margin-top: 3px;
+    cursor: pointer;
+    accent-color: var(--accent-blue);
+}
+
+.model-option .option-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.model-option strong {
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.model-option small {
+    color: var(--text-secondary);
+    font-size: 12px;
+}

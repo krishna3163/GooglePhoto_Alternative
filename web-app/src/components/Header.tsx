@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Search, Upload, HelpCircle, Settings, FolderPlus, LogOut, Check, Edit3, Heart, BookOpen, Users, ExternalLink } from 'lucide-react';
 import type { TelegramConfig } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,6 +13,7 @@ interface HeaderProps {
     onHelpClick: () => void;
     onDevClick: () => void;
     onFilesSelected: (files: FileList) => void;
+    onDeveloperModeToggle?: (enabled: boolean) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -23,13 +24,42 @@ const Header: React.FC<HeaderProps> = ({
     onUpdateName,
     onHelpClick,
     onDevClick,
-    onFilesSelected
+    onFilesSelected,
+    onDeveloperModeToggle
 }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const folderInputRef = useRef<HTMLInputElement>(null);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [devTapCount, setDevTapCount] = useState(0);
+    const devTapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [isEditingName, setIsEditingName] = useState(false);
     const [editedName, setEditedName] = useState(userName);
+
+    // 5-tap developer mode activation
+    const handleLogoClick = () => {
+        setDevTapCount(prev => {
+            const newCount = prev + 1;
+            
+            if (devTapTimeoutRef.current) {
+                clearTimeout(devTapTimeoutRef.current);
+            }
+
+            if (newCount === 5) {
+                // Activate developer mode
+                const newDevMode = !config?.isDeveloperMode;
+                onDeveloperModeToggle?.(newDevMode);
+                setDevTapCount(0);
+                return 0;
+            }
+
+            // Reset tap count after 2 seconds
+            devTapTimeoutRef.current = setTimeout(() => {
+                setDevTapCount(0);
+            }, 2000);
+
+            return newCount;
+        });
+    };
 
     const handleUploadClick = () => {
         fileInputRef.current?.click();
@@ -51,14 +81,23 @@ const Header: React.FC<HeaderProps> = ({
         if (folderInputRef.current) folderInputRef.current.value = '';
     };
 
+    useEffect(() => {
+        return () => {
+            if (devTapTimeoutRef.current) {
+                clearTimeout(devTapTimeoutRef.current);
+            }
+        };
+    }, []);
+
     return (
         <header className="header">
             <div className="header-left">
                 <motion.div
                     className="logo-container"
-                    onClick={() => window.location.reload()}
+                    onClick={handleLogoClick}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    title={devTapCount > 0 ? `Developer mode taps: ${devTapCount}/5` : 'Developer Tap Counter'}
                 >
                     <img src="/icon.png" alt="TeleGphoto" className="logo-img" onError={(e) => (e.currentTarget.src = './logo.svg')} />
                     <span className="logo-text">TeleGphoto</span>
