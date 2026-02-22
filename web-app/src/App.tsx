@@ -10,6 +10,7 @@ import MessageBoard from './components/MessageBoard';
 import DeveloperProfile from './components/DeveloperProfile';
 import UploadQueue from './components/UploadQueue';
 import TelegramManager from './components/TelegramManager';
+import InstallPrompt from './components/InstallPrompt';
 import { uploadFileToTelegram, getFileDownloadUrl, deleteTelegramMessage } from './services/telegramService';
 import { extractTextFromImage } from './services/ocrService';
 import type { TelegramConfig, PhotoAsset, UploadItem } from './types';
@@ -273,9 +274,6 @@ const App: React.FC = () => {
               onDevClick={() => setShowDevProfile(true)}
               onFilesSelected={handleFilesSelected}
               onDeveloperModeToggle={handleDeveloperModeToggle}
-              layoutMode={layoutMode}
-              onLayoutChange={handleLayoutChange}
-              showLayoutToggle={activeTab !== 'Messages' && activeTab !== 'Telegram'}
               onMenuClick={() => setSidebarOpen(true)}
             />
             <motion.main
@@ -296,6 +294,7 @@ const App: React.FC = () => {
                   title={activeTab}
                   onPhotoClick={setSelectedPhoto}
                   layoutMode={layoutMode}
+                  onLayoutChange={handleLayoutChange}
                 />
               )}
             </motion.main>
@@ -331,6 +330,7 @@ const App: React.FC = () => {
                 onClose={() => setShowQueue(false)}
               />
             )}
+            <InstallPrompt />
           </AnimatePresence>
         </motion.div>
       )}

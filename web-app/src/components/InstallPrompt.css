@@ -1,0 +1,120 @@
+.install-prompt-banner {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    right: 24px;
+    max-width: 480px;
+    margin: 0 auto;
+    background: rgba(22, 22, 24, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 10000;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.install-icon-box {
+    width: 48px;
+    height: 48px;
+    background: var(--active-overlay);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-blue);
+    flex-shrink: 0;
+}
+
+.install-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.install-text h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+}
+
+.install-text p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.install-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.install-btn {
+    background: var(--accent-blue);
+    color: #000;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s;
+}
+
+.install-btn:hover {
+    transform: scale(1.05);
+}
+
+.dismiss-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: background 0.2s;
+}
+
+.dismiss-btn:hover {
+    background: var(--hover-overlay);
+    color: white;
+}
+
+@media (max-width: 600px) {
+    .install-prompt-banner {
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        padding: 12px;
+        border-radius: 16px;
+    }
+
+    .install-icon-box {
+        width: 40px;
+        height: 40px;
+    }
+
+    .install-text h4 {
+        font-size: 15px;
+    }
+
+    .install-text p {
+        font-size: 12px;
+    }
+
+    .install-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}

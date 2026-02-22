@@ -105,14 +105,22 @@ const SetupGuide: React.FC<SetupGuideProps> = ({ onClose }) => {
                             <div className="step-info">
                                 <h3>Get Your Chat ID (Vault Address)</h3>
                                 <div className="instruction-box">
-                                    <p>1. Send any message like <code>hello</code> in the channel.</p>
-                                    <p>2. Open this link (replace &lt;TOKEN&gt; with yours):</p>
-                                    <code className="url-link">https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code>
-                                    <p>3. Find the "id" value in the response:</p>
-                                    <div className="code-json">
-                                        <code>{`"chat": { "id": -1001234567890, ... }`}</code>
-                                    </div>
-                                    <p className="tip">👉 The "id" (including the minus sign) is your Chat ID.</p>
+                                    <p>1. Forward any message from the channel to <b>@userinfobot</b> or follow the <code>/getUpdates</code> method above.</p>
+                                    <p className="tip">👉 The "id" (starts with -100) is your Chat ID.</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div className="divider"></div>
+
+                        <section className="step-card pwa-step">
+                            <div className="step-num">📱</div>
+                            <div className="step-info">
+                                <h3>Install as App (PWA)</h3>
+                                <p>Get a native app-like experience on your Android or iPhone.</p>
+                                <div className="instruction-box">
+                                    <p><b>Android:</b> Tap three dots ⋮ → <b>Install App</b> or <b>Add to Home Screen</b></p>
+                                    <p><b>iOS (iPhone):</b> Tap Share icon → <b>Add to Home Screen</b></p>
                                 </div>
                             </div>
                         </section>

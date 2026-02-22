@@ -1,7 +1,8 @@
 import React, { useRef } from 'react';
 import type { TelegramConfig, PhotoAsset } from '../types';
 import type { LayoutMode } from '../utils/storage';
-import { FileText, Play, Star } from 'lucide-react';
+import { FileText, Play, Star, LayoutGrid, List } from 'lucide-react';
+import { motion } from 'framer-motion';
 import './PhotoGrid.css';
 
 interface PhotoGridProps {
@@ -11,9 +12,10 @@ interface PhotoGridProps {
     title: string;
     onPhotoClick: (photo: PhotoAsset) => void;
     layoutMode?: LayoutMode;
+    onLayoutChange?: (mode: LayoutMode) => void;
 }
 
-const PhotoGrid: React.FC<PhotoGridProps> = ({ config, photos, searchQuery, title, onPhotoClick, layoutMode = 'grid' }) => {
+const PhotoGrid: React.FC<PhotoGridProps> = ({ config, photos, searchQuery, title, onPhotoClick, layoutMode = 'grid', onLayoutChange }) => {
     if (!config) {
         return (
             <div className="empty-state">
@@ -109,6 +111,28 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ config, photos, searchQuery, titl
         <div className={`photo-grid-container ${isList ? 'layout-list' : 'layout-grid'}`}>
             <div className="grid-header">
                 <h2 className="grid-title">{title}</h2>
+                {onLayoutChange && (
+                    <div className="view-switcher-container">
+                        <div className="view-switcher">
+                            <motion.button
+                                className={`view-option ${layoutMode === 'grid' ? 'active' : ''}`}
+                                onClick={() => onLayoutChange('grid')}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                <LayoutGrid size={16} />
+                                <span>Grid</span>
+                            </motion.button>
+                            <motion.button
+                                className={`view-option ${layoutMode === 'list' ? 'active' : ''}`}
+                                onClick={() => onLayoutChange('list')}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                <List size={16} />
+                                <span>List</span>
+                            </motion.button>
+                        </div>
+                    </div>
+                )}
             </div>
             {Object.keys(groupedPhotos).map((date) => (
                 <div key={date} className="date-group">

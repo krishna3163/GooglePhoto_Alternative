@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Trash2, Download, Edit2, Check, FileText, Star } from 'lucide-react';
+import { X, Trash2, Download, Edit2, Check, FileText, Star, ExternalLink } from 'lucide-react';
 import type { PhotoAsset } from '../types';
 import './MediaViewer.css';
 
@@ -33,25 +33,44 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ photo, onClose, onDelete, onU
                 );
             case 'document':
                 if (isPdf) {
+                    const googleDocsUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(photo.url)}&embedded=true`;
                     return (
                         <div className="viewer-pdf-container">
-                            <embed
-                                src={photo.url}
-                                type="application/pdf"
+                            <iframe
+                                src={googleDocsUrl}
+                                title={photo.fileName}
                                 width="100%"
                                 height="100%"
-                                className="pdf-embed"
+                                className="pdf-iframe"
+                                frameBorder="0"
                             />
+                            <div className="pdf-fallback-overlay">
+                                <div className="fallback-icon-circle">
+                                    <FileText size={40} color="#8ab4f8" />
+                                </div>
+                                <h3>PDF Preview</h3>
+                                <p>If the document doesn't appear above, you can open it directly in a new tab.</p>
+                                <div className="pdf-action-buttons">
+                                    <a href={photo.url} target="_blank" rel="noreferrer" className="view-pdf-btn">
+                                        <ExternalLink size={18} />
+                                        Open Original PDF
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     );
                 }
                 return (
                     <div className="viewer-document">
-                        <FileText size={120} color="#8ab4f8" />
-                        <span className="viewer-doc-name">{photo.fileName}</span>
-                        <a href={photo.url} target="_blank" rel="noreferrer" className="view-pdf-btn">
-                            Download Document
-                        </a>
+                        <div className="document-preview-card">
+                            <FileText size={100} color="#8ab4f8" />
+                            <span className="viewer-doc-name">{photo.fileName}</span>
+                            <p className="doc-type-badge">{photo.fileName.split('.').pop()?.toUpperCase()} Document</p>
+                            <a href={photo.url} target="_blank" rel="noreferrer" className="view-pdf-btn">
+                                <Download size={18} />
+                                Download File
+                            </a>
+                        </div>
                     </div>
                 );
             default:

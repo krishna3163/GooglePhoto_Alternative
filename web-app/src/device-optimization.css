@@ -7,7 +7,7 @@
     --safe-area-inset-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
     --safe-area-inset-left: max(env(safe-area-inset-left, 0px), 0px);
     --safe-area-inset-right: max(env(safe-area-inset-right, 0px), 0px);
-    
+
     /* Touch-friendly minimal sizes */
     --touch-target-min: 44px;
     --touch-target-lg: 48px;
@@ -23,12 +23,16 @@
     user-select: none;
 }
 
-input, textarea, button, select {
+input,
+textarea,
+button,
+select {
     -webkit-user-select: text;
     user-select: text;
 }
 
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
     width: 100%;
@@ -54,7 +58,9 @@ body {
 }
 
 /* Readable text on all devices */
-p, span, div {
+p,
+span,
+div {
     word-break: break-word;
     overflow-wrap: break-word;
 }
@@ -62,9 +68,15 @@ p, span, div {
 /* ==================== TOUCH-FRIENDLY UI ==================== */
 
 /* Minimum touch target size: 44x44px */
-button, a, input[type="button"], input[type="submit"],
-input[type="reset"], input[type="checkbox"], input[type="radio"],
-.clickable, [role="button"] {
+button,
+a,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+.clickable,
+[role="button"] {
     min-height: 44px;
     min-width: 44px;
     padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
@@ -72,7 +84,9 @@ input[type="reset"], input[type="checkbox"], input[type="radio"],
 }
 
 /* Touch feedback */
-button:active, a:active, .clickable:active {
+button:active,
+a:active,
+.clickable:active {
     opacity: 0.7;
     transform: scale(0.98);
 }
@@ -207,7 +221,9 @@ video {
 
 /* ==================== CARD & MODAL OPTIMIZATION ==================== */
 
-.card, .modal-content, .container {
+.card,
+.modal-content,
+.container {
     border-radius: clamp(8px, 2vw, 16px);
     padding: clamp(12px, 3vw, 20px);
     word-break: break-word;
@@ -219,7 +235,8 @@ video {
 
 /* ==================== HEADER & NAVIGATION ==================== */
 
-header, nav {
+header,
+nav {
     padding: clamp(12px, 2.5vw, 16px) clamp(12px, 3vw, 24px);
     position: sticky;
     top: 0;
@@ -238,54 +255,85 @@ header {
     :root {
         font-size: clamp(13px, 3.5vw, 15px);
     }
-    
+
     .container-padding,
     .card,
     .modal-content {
         padding: clamp(10px, 2.5vw, 16px);
     }
-    
-    .gap-small, .gap-medium { gap: 8px; }
-    .gap-large { gap: 12px; }
-    
-    button, a, .clickable {
+
+    .gap-small,
+    .gap-medium {
+        gap: 8px;
+    }
+
+    .gap-large {
+        gap: 12px;
+    }
+
+    button,
+    a,
+    .clickable {
         padding: 10px 14px;
         min-height: 44px;
     }
-    
-    h1 { font-size: clamp(20px, 5vw, 24px); margin: 12px 0; }
-    h2 { font-size: clamp(18px, 4.5vw, 22px); margin: 10px 0; }
-    h3 { font-size: clamp(16px, 4vw, 20px); margin: 8px 0; }
-    h4 { font-size: clamp(14px, 3.5vw, 18px); margin: 6px 0; }
-    
-    .hide-mobile { display: none !important; }
-    .show-mobile { display: block !important; }
-    
-    .sidebar { 
-        width: 80vw !important;
-        max-width: 280px;
+
+    h1 {
+        font-size: clamp(20px, 5vw, 24px);
+        margin: 12px 0;
     }
-    
+
+    h2 {
+        font-size: clamp(18px, 4.5vw, 22px);
+        margin: 10px 0;
+    }
+
+    h3 {
+        font-size: clamp(16px, 4vw, 20px);
+        margin: 8px 0;
+    }
+
+    h4 {
+        font-size: clamp(14px, 3.5vw, 18px);
+        margin: 6px 0;
+    }
+
+    .hide-mobile {
+        display: none !important;
+    }
+
+    .show-mobile {
+        display: block !important;
+    }
+
     .grid-responsive {
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
     }
-    
+
     .grid-responsive-sm {
         grid-template-columns: 1fr;
     }
-    
+
     /* Landscape phone optimization */
     @media (orientation: landscape) {
-        html, body, #root {
+
+        html,
+        body,
+        #root {
             max-height: 100vh;
         }
-        
+
         .content {
             max-height: calc(100vh - 80px);
         }
-        
-        header { padding: 8px 12px; }
-        .hide-landscape { display: none !important; }
+
+        header {
+            padding: 8px 12px;
+        }
+
+        .hide-landscape {
+            display: none !important;
+        }
     }
 }
 
@@ -294,25 +342,42 @@ header {
     :root {
         font-size: clamp(14px, 2.5vw, 16px);
     }
-    
-    h1 { font-size: 28px; }
-    h2 { font-size: 24px; }
-    h3 { font-size: 20px; }
-    h4 { font-size: 18px; }
-    
-    .container-padding { padding: clamp(14px, 2.5vw, 20px); }
-    
+
+    h1 {
+        font-size: 28px;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
+
+    h3 {
+        font-size: 20px;
+    }
+
+    h4 {
+        font-size: 18px;
+    }
+
+    .container-padding {
+        padding: clamp(14px, 2.5vw, 20px);
+    }
+
     .grid-responsive {
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
     }
-    
+
     .grid-responsive-sm {
         grid-template-columns: repeat(2, 1fr);
     }
-    
-    .sidebar { width: 240px !important; }
-    
-    .hide-tablet { display: none !important; }
+
+    .sidebar {
+        width: 240px !important;
+    }
+
+    .hide-tablet {
+        display: none !important;
+    }
 }
 
 /* Small Laptops (769px - 1024px) */
@@ -320,21 +385,34 @@ header {
     :root {
         font-size: 15px;
     }
-    
-    h1 { font-size: 32px; }
-    h2 { font-size: 28px; }
-    h3 { font-size: 24px; }
-    h4 { font-size: 20px; }
-    
+
+    h1 {
+        font-size: 32px;
+    }
+
+    h2 {
+        font-size: 28px;
+    }
+
+    h3 {
+        font-size: 24px;
+    }
+
+    h4 {
+        font-size: 20px;
+    }
+
     .grid-responsive {
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
     }
-    
+
     .grid-responsive-sm {
         grid-template-columns: repeat(3, 1fr);
     }
-    
-    .hide-small-desktop { display: none !important; }
+
+    .hide-small-desktop {
+        display: none !important;
+    }
 }
 
 /* Large Desktops (1025px+) */
@@ -342,20 +420,31 @@ header {
     :root {
         font-size: 16px;
     }
-    
-    h1 { font-size: 36px; }
-    h2 { font-size: 32px; }
-    h3 { font-size: 28px; }
-    h4 { font-size: 24px; }
-    
+
+    h1 {
+        font-size: 36px;
+    }
+
+    h2 {
+        font-size: 32px;
+    }
+
+    h3 {
+        font-size: 28px;
+    }
+
+    h4 {
+        font-size: 24px;
+    }
+
     .grid-responsive {
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
-    
+
     .grid-responsive-sm {
         grid-template-columns: repeat(6, 1fr);
     }
-    
+
     .container {
         max-width: 1400px;
         margin: 0 auto;
@@ -367,7 +456,7 @@ header {
     .container {
         max-width: 1800px;
     }
-    
+
     .grid-responsive {
         grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     }
@@ -381,16 +470,18 @@ header {
         padding-top: var(--safe-area-inset-top);
         padding-bottom: var(--safe-area-inset-bottom);
     }
-    
+
     input[type="date"],
     input[type="time"],
     input[type="datetime-local"],
     select {
-        font-size: 16px; /* Prevents zoom on iOS */
+        font-size: 16px;
+        /* Prevents zoom on iOS */
     }
-    
+
     /* Fix for iOS sticky positioning */
-    header, nav {
+    header,
+    nav {
         position: -webkit-sticky;
         position: sticky;
     }
@@ -435,7 +526,9 @@ select:focus {
 
 /* High contrast mode support */
 @media (prefers-contrast: more) {
-    button, a {
+
+    button,
+    a {
         border: 2px solid currentColor;
     }
 }
@@ -443,15 +536,19 @@ select:focus {
 /* ==================== PRINTING ==================== */
 
 @media print {
-    .no-print, .sidebar, .navbar, footer {
+
+    .no-print,
+    .sidebar,
+    .navbar,
+    footer {
         display: none !important;
     }
-    
+
     .content {
         padding: 0;
         overflow: visible;
     }
-    
+
     body {
         background: white;
         color: black;
@@ -533,15 +630,30 @@ img {
 
 /* ==================== VIEWPORT-SPECIFIC VISIBILITY ==================== */
 
-.show-mobile { display: none; }
-.show-tablet { display: none; }
-.show-desktop { display: block; }
+.show-mobile {
+    display: none;
+}
+
+.show-tablet {
+    display: none;
+}
+
+.show-desktop {
+    display: block;
+}
 
 @media (max-width: 768px) {
-    .show-mobile { display: block; }
-    .show-desktop { display: none; }
+    .show-mobile {
+        display: block;
+    }
+
+    .show-desktop {
+        display: none;
+    }
 }
 
 @media (min-width: 481px) and (max-width: 768px) {
-    .show-tablet { display: block; }
+    .show-tablet {
+        display: block;
+    }
 }

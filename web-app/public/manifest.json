@@ -1,0 +1,45 @@
+{
+    "name": "TeleGphoto",
+    "short_name": "TeleGphoto",
+    "description": "Premium cloud storage powered by Telegram API.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0a0a0b",
+    "theme_color": "#0a0a0b",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/icon.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Messages",
+            "url": "/?tab=Messages",
+            "icons": [
+                {
+                    "src": "/icon.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Recently Added",
+            "url": "/?tab=Recent",
+            "icons": [
+                {
+                    "src": "/icon.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ]
+}

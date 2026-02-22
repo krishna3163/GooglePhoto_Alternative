@@ -10,7 +10,8 @@ import {
     Clock,
     ChevronDown,
     MessageSquare,
-    Send
+    Send,
+    X
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -51,6 +52,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isDeveloperM
         <>
             {isOpen && <div className="sidebar-backdrop" onClick={onClose} aria-hidden="true" />}
             <aside className={`sidebar ${isOpen ? 'active' : ''}`}>
+                <div className="sidebar-mobile-header">
+                    <div className="logo-container">
+                        <img src="/icon.png" alt="Logo" className="logo-img" />
+                        <span className="logo-text">TeleGphoto</span>
+                    </div>
+                    {onClose && (
+                        <button className="sidebar-close-btn" onClick={onClose}>
+                            <X size={24} />
+                        </button>
+                    )}
+                </div>
                 <div className="sidebar-section">
                     {menuItems.map((item) => (
                         <div

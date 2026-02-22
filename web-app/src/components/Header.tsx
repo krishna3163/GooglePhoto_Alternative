@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Search, Upload, HelpCircle, Settings, FolderPlus, LogOut, Check, Edit3, Heart, BookOpen, Users, ExternalLink, Shield, LayoutGrid, List, Menu } from 'lucide-react';
+import { Search, Upload, HelpCircle, Settings, FolderPlus, LogOut, Check, Edit3, Heart, BookOpen, Users, ExternalLink, Shield, Menu } from 'lucide-react';
 import type { TelegramConfig } from '../types';
-import type { LayoutMode } from '../utils/storage';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Header.css';
 
@@ -15,9 +14,6 @@ interface HeaderProps {
     onDevClick: () => void;
     onFilesSelected: (files: FileList) => void;
     onDeveloperModeToggle?: (enabled: boolean) => void;
-    layoutMode?: LayoutMode;
-    onLayoutChange?: (mode: LayoutMode) => void;
-    showLayoutToggle?: boolean;
     onMenuClick?: () => void;
 }
 
@@ -31,16 +27,13 @@ const Header: React.FC<HeaderProps> = ({
     onDevClick,
     onFilesSelected,
     onDeveloperModeToggle,
-    layoutMode = 'grid',
-    onLayoutChange,
-    showLayoutToggle = false,
     onMenuClick
 }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const folderInputRef = useRef<HTMLInputElement>(null);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [devTapCount, setDevTapCount] = useState(0);
-    const devTapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const devTapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [isEditingName, setIsEditingName] = useState(false);
     const [editedName, setEditedName] = useState(userName);
 
@@ -48,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({
     const handleLogoClick = () => {
         setDevTapCount(prev => {
             const newCount = prev + 1;
-            
+
             if (devTapTimeoutRef.current) {
                 clearTimeout(devTapTimeoutRef.current);
             }
@@ -106,11 +99,14 @@ const Header: React.FC<HeaderProps> = ({
                         type="button"
                         className="icon-button header-menu-btn"
                         title="Menu"
-                        onClick={onMenuClick}
+                        onClick={() => {
+                            console.log('Menu clicked');
+                            onMenuClick();
+                        }}
                         whileTap={{ scale: 0.9 }}
                         aria-label="Open menu"
                     >
-                        <Menu size={22} />
+                        <Menu size={24} />
                     </motion.button>
                 )}
                 <motion.div
@@ -162,29 +158,6 @@ const Header: React.FC<HeaderProps> = ({
                 <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="icon-button" title="Upload Folder" onClick={handleFolderClick}>
                     <FolderPlus size={20} />
                 </motion.div>
-
-                {showLayoutToggle && onLayoutChange && (
-                    <div className="layout-toggle" role="group" aria-label="View layout">
-                        <motion.button
-                            type="button"
-                            className={`icon-button layout-btn ${layoutMode === 'grid' ? 'active' : ''}`}
-                            title="Grid view"
-                            onClick={() => onLayoutChange('grid')}
-                            whileTap={{ scale: 0.9 }}
-                        >
-                            <LayoutGrid size={20} />
-                        </motion.button>
-                        <motion.button
-                            type="button"
-                            className={`icon-button layout-btn ${layoutMode === 'list' ? 'active' : ''}`}
-                            title="List view"
-                            onClick={() => onLayoutChange('list')}
-                            whileTap={{ scale: 0.9 }}
-                        >
-                            <List size={20} />
-                        </motion.button>
-                    </div>
-                )}
 
                 <motion.div
                     whileHover={{ scale: 1.1 }}
