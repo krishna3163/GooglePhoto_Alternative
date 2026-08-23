@@ -1,11 +1,9 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { ObjectId } from 'mongodb';
+import { queryPg } from '../config/database.js';
 import { env } from '../config/env.js';
-import { collections } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
-import type { UserDocument, SessionDocument, VaultDocument } from '../types/index.js';
 
 export interface RegisterInput {
   username: string;
@@ -41,129 +39,129 @@ export class AuthService {
   }
 
   public static async register(input: RegisterInput): Promise<{ user: any; tokens: AuthTokens; defaultVault: any }> {
-    const users = collections.users();
-    const vaults = collections.vaults();
-    const syncRevs = collections.syncRevisions();
+    const username = input.username.trim();
+    const email = input.email.trim().toLowerCase();
 
-    const usernameNormalized = input.username.trim().toLowerCase();
-    const emailNormalized = input.email.trim().toLowerCase();
+    // 1. Check duplicate username or email
+    const existing = await queryPg(
+      'SELECT id, username, email FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($2) LIMIT 1',
+      [username, email]
+    );
 
-    // Check duplicate username or email
-    const existingUser = await users.findOne({
-      $or: [{ usernameNormalized }, { emailNormalized }],
-    });
-
-    if (existingUser) {
-      if (existingUser.usernameNormalized === usernameNormalized) {
+    if (existing.rows.length > 0) {
+      const row = existing.rows[0];
+      if (row.username.toLowerCase() === username.toLowerCase()) {
         throw new AppError(409, 'USERNAME_TAKEN', 'This username is already taken');
       }
       throw new AppError(409, 'EMAIL_TAKEN', 'An account with this email already exists');
     }
 
-    // Strong password hash (bcrypt rounds 12)
+    // 2. Strong password hash (bcrypt rounds 12)
     const passwordHash = await bcrypt.hash(input.password, 12);
 
-    const userDoc: UserDocument = {
-      username: input.username.trim(),
-      usernameNormalized,
-      email: input.email.trim(),
-      emailNormalized,
-      passwordHash,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      status: 'active',
-    };
+    // 3. Insert User
+    const userRes = await queryPg(
+      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, created_at',
+      [username, email, passwordHash]
+    );
+    const user = userRes.rows[0];
+    const userId = user.id;
 
-    const insertResult = await users.insertOne(userDoc);
-    const userId = insertResult.insertedId;
+    // 4. Create default Personal Vault
+    const vaultRes = await queryPg(
+      `INSERT INTO vaults (user_id, name, encrypted_vault_key, wrapped_with_recovery, salt, key_version)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, name, encrypted_vault_key, wrapped_with_recovery, salt, key_version`,
+      [
+        userId,
+        input.initialVault?.name || 'Personal Vault',
+        input.initialVault?.encryptedVaultKey || 'initial_empty_encrypted_key',
+        input.initialVault?.wrappedWithRecovery || null,
+        input.initialVault?.salt || 'initial_salt',
+        input.initialVault?.keyVersion || 1,
+      ]
+    );
+    const vault = vaultRes.rows[0];
 
-    // Create default Personal Vault
-    const vaultDoc: VaultDocument = {
-      userId,
-      name: input.initialVault?.name || 'Personal Vault',
-      encryptedVaultKey: input.initialVault?.encryptedVaultKey || 'initial_empty_encrypted_key',
-      wrappedWithRecovery: input.initialVault?.wrappedWithRecovery,
-      salt: input.initialVault?.salt || 'initial_salt',
-      keyVersion: input.initialVault?.keyVersion || 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    // 5. Initialize Sync Event
+    await queryPg(
+      `INSERT INTO sync_events (user_id, entity_type, entity_id, operation, sync_version, payload)
+       VALUES ($1, 'vault', $2, 'CREATE', 1, $3)`,
+      [userId, vault.id, JSON.stringify({ name: vault.name })]
+    );
 
-    const vaultResult = await vaults.insertOne(vaultDoc);
-
-    // Initialize Sync Revision tracker
-    await syncRevs.insertOne({
-      userId,
-      currentRevision: 1,
-      updatedAt: new Date(),
-    });
-
-    // Create active session and generate tokens
+    // 6. Create Session and issue tokens
     const deviceId = input.deviceId || crypto.randomUUID();
     const deviceName = input.deviceName || 'Web Browser';
-    const tokens = await this.createSession(userId, input.username.trim(), input.email.trim(), deviceId, deviceName);
+    const tokens = await this.createSession(userId, user.username, user.email, deviceId, deviceName);
 
     return {
       user: {
-        id: userId.toString(),
-        username: userDoc.username,
-        email: userDoc.email,
+        id: user.id,
+        username: user.username,
+        email: user.email,
       },
       defaultVault: {
-        id: vaultResult.insertedId.toString(),
-        name: vaultDoc.name,
-        encryptedVaultKey: vaultDoc.encryptedVaultKey,
-        wrappedWithRecovery: vaultDoc.wrappedWithRecovery,
-        salt: vaultDoc.salt,
-        keyVersion: vaultDoc.keyVersion,
+        id: vault.id,
+        name: vault.name,
+        encryptedVaultKey: vault.encrypted_vault_key,
+        wrappedWithRecovery: vault.wrapped_with_recovery,
+        salt: vault.salt,
+        keyVersion: vault.key_version,
       },
       tokens,
     };
   }
 
   public static async login(input: LoginInput): Promise<{ user: any; tokens: AuthTokens; vaults: any[] }> {
-    const users = collections.users();
-    const vaults = collections.vaults();
+    const query = input.usernameOrEmail.trim().toLowerCase();
 
-    const normalizedQuery = input.usernameOrEmail.trim().toLowerCase();
-    const user = await users.findOne({
-      $or: [{ usernameNormalized: normalizedQuery }, { emailNormalized: normalizedQuery }],
-    });
+    // 1. Fetch user by username or email
+    const res = await queryPg(
+      'SELECT id, username, email, password_hash, status FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($1) LIMIT 1',
+      [query]
+    );
 
-    if (!user) {
+    if (res.rows.length === 0) {
       throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid username or password');
     }
 
+    const user = res.rows[0];
     if (user.status === 'suspended') {
       throw new AppError(403, 'ACCOUNT_SUSPENDED', 'This account has been suspended');
     }
 
-    const isMatch = await bcrypt.compare(input.password, user.passwordHash);
+    // 2. Validate password
+    const isMatch = await bcrypt.compare(input.password, user.password_hash);
     if (!isMatch) {
       throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid username or password');
     }
 
+    // 3. Fetch user vaults
+    const vaultsRes = await queryPg(
+      'SELECT id, name, description, encrypted_vault_key, wrapped_with_recovery, salt, key_version FROM vaults WHERE user_id = $1 ORDER BY created_at ASC',
+      [user.id]
+    );
+
+    // 4. Create Session
     const deviceId = input.deviceId || crypto.randomUUID();
     const deviceName = input.deviceName || 'Web Browser';
-    const tokens = await this.createSession(user._id!, user.username, user.email, deviceId, deviceName);
-
-    const userVaults = await vaults.find({ userId: user._id }).toArray();
+    const tokens = await this.createSession(user.id, user.username, user.email, deviceId, deviceName);
 
     return {
       user: {
-        id: user._id!.toString(),
+        id: user.id,
         username: user.username,
         email: user.email,
-        telegramConnectionId: user.telegramConnectionId,
       },
-      vaults: userVaults.map((v) => ({
-        id: v._id!.toString(),
+      vaults: vaultsRes.rows.map((v) => ({
+        id: v.id,
         name: v.name,
         description: v.description,
-        encryptedVaultKey: v.encryptedVaultKey,
-        wrappedWithRecovery: v.wrappedWithRecovery,
+        encryptedVaultKey: v.encrypted_vault_key,
+        wrappedWithRecovery: v.wrapped_with_recovery,
         salt: v.salt,
-        keyVersion: v.keyVersion,
+        keyVersion: v.key_version,
       })),
       tokens,
     };
@@ -172,64 +170,60 @@ export class AuthService {
   public static async refreshSession(refreshToken: string): Promise<AuthTokens> {
     try {
       const payload = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET) as any;
-      const sessions = collections.sessions();
-      const users = collections.users();
 
-      const session = await sessions.findOne({
-        _id: new ObjectId(payload.sessionId),
-        revokedAt: { $exists: false },
-      });
+      const sessionRes = await queryPg(
+        'SELECT id, user_id, refresh_token_hash, device_id, device_name FROM sessions WHERE id = $1 AND revoked_at IS NULL LIMIT 1',
+        [payload.sessionId]
+      );
 
-      if (!session) {
+      if (sessionRes.rows.length === 0) {
         throw new AppError(401, 'SESSION_EXPIRED', 'Session has expired or was revoked');
       }
 
+      const session = sessionRes.rows[0];
       const tokenHash = this.hashToken(refreshToken);
-      if (session.refreshTokenHash !== tokenHash) {
-        // Potential token reuse / compromise: revoke session immediately
-        await sessions.updateOne({ _id: session._id }, { $set: { revokedAt: new Date() } });
+
+      if (session.refresh_token_hash !== tokenHash) {
+        // Revoke immediately if reused
+        await queryPg('UPDATE sessions SET revoked_at = NOW() WHERE id = $1', [session.id]);
         throw new AppError(401, 'TOKEN_COMPROMISED', 'Refresh token reused or invalidated');
       }
 
-      const user = await users.findOne({ _id: session.userId });
-      if (!user) {
+      const userRes = await queryPg('SELECT id, username, email FROM users WHERE id = $1 LIMIT 1', [session.user_id]);
+      if (userRes.rows.length === 0) {
         throw new AppError(401, 'USER_NOT_FOUND', 'User not found');
       }
+      const user = userRes.rows[0];
 
       // Rotate Refresh Token
       const newRefreshToken = jwt.sign(
-        { sessionId: session._id!.toString(), userId: user._id!.toString() },
+        { sessionId: session.id, userId: user.id },
         env.JWT_REFRESH_SECRET,
         { expiresIn: '30d' }
       );
 
       const newAccessToken = jwt.sign(
         {
-          sub: user._id!.toString(),
-          userId: user._id!.toString(),
+          sub: user.id,
+          userId: user.id,
           username: user.username,
           email: user.email,
-          sessionId: session._id!.toString(),
-          deviceId: session.deviceId,
+          sessionId: session.id,
+          deviceId: session.device_id,
         },
         env.JWT_SECRET,
         { expiresIn: '15m' }
       );
 
-      await sessions.updateOne(
-        { _id: session._id },
-        {
-          $set: {
-            refreshTokenHash: this.hashToken(newRefreshToken),
-            lastUsedAt: new Date(),
-          },
-        }
+      await queryPg(
+        'UPDATE sessions SET refresh_token_hash = $1, last_used_at = NOW() WHERE id = $2',
+        [this.hashToken(newRefreshToken), session.id]
       );
 
       return {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
-        expiresIn: 15 * 60, // 15 minutes in seconds
+        expiresIn: 15 * 60,
       };
     } catch (err: any) {
       if (err instanceof AppError) throw err;
@@ -239,19 +233,11 @@ export class AuthService {
 
   public static async logout(sessionId: string): Promise<void> {
     if (!sessionId) return;
-    const sessions = collections.sessions();
-    await sessions.updateOne(
-      { _id: new ObjectId(sessionId) },
-      { $set: { revokedAt: new Date() } }
-    );
+    await queryPg('UPDATE sessions SET revoked_at = NOW() WHERE id = $1', [sessionId]);
   }
 
   public static async logoutAllDevices(userId: string): Promise<void> {
-    const sessions = collections.sessions();
-    await sessions.updateMany(
-      { userId: new ObjectId(userId), revokedAt: { $exists: false } },
-      { $set: { revokedAt: new Date() } }
-    );
+    await queryPg('UPDATE sessions SET revoked_at = NOW() WHERE user_id = $1 AND revoked_at IS NULL', [userId]);
   }
 
   public static async changePassword(
@@ -260,91 +246,64 @@ export class AuthService {
     newPass: string,
     newEncryptedVaultKeys: { vaultId: string; encryptedVaultKey: string; salt: string }[]
   ): Promise<void> {
-    const users = collections.users();
-    const vaults = collections.vaults();
-
-    const user = await users.findOne({ _id: new ObjectId(userId) });
-    if (!user) {
+    const userRes = await queryPg('SELECT id, password_hash FROM users WHERE id = $1 LIMIT 1', [userId]);
+    if (userRes.rows.length === 0) {
       throw new AppError(404, 'USER_NOT_FOUND', 'User not found');
     }
 
-    const isMatch = await bcrypt.compare(currentPass, user.passwordHash);
+    const user = userRes.rows[0];
+    const isMatch = await bcrypt.compare(currentPass, user.password_hash);
     if (!isMatch) {
       throw new AppError(400, 'INVALID_PASSWORD', 'Current password does not match');
     }
 
     const newHash = await bcrypt.hash(newPass, 12);
-    await users.updateOne(
-      { _id: user._id },
-      { $set: { passwordHash: newHash, updatedAt: new Date() } }
-    );
+    await queryPg('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [newHash, userId]);
 
-    // Update re-wrapped vault keys
     for (const item of newEncryptedVaultKeys) {
-      await vaults.updateOne(
-        { _id: new ObjectId(item.vaultId), userId: user._id },
-        {
-          $set: {
-            encryptedVaultKey: item.encryptedVaultKey,
-            salt: item.salt,
-            updatedAt: new Date(),
-          },
-        }
+      await queryPg(
+        'UPDATE vaults SET encrypted_vault_key = $1, salt = $2, updated_at = NOW() WHERE id = $3 AND user_id = $4',
+        [item.encryptedVaultKey, item.salt, item.vaultId, userId]
       );
     }
   }
 
   private static async createSession(
-    userId: ObjectId,
+    userId: string,
     username: string,
     email: string,
     deviceId: string,
     deviceName: string
   ): Promise<AuthTokens> {
-    const sessions = collections.sessions();
-    const devices = collections.devices();
+    // 1. Insert session record
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const sessionRes = await queryPg(
+      `INSERT INTO sessions (user_id, device_id, device_name, refresh_token_hash, expires_at)
+       VALUES ($1, $2, $3, '', $4)
+       RETURNING id`,
+      [userId, deviceId, deviceName, expiresAt]
+    );
+    const sessionId = sessionRes.rows[0].id;
 
-    const sessionDoc: SessionDocument = {
-      userId,
-      deviceId,
-      deviceName,
-      userAgentSummary: deviceName,
-      refreshTokenHash: '',
-      createdAt: new Date(),
-      lastUsedAt: new Date(),
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-    };
-
-    const sessionRes = await sessions.insertOne(sessionDoc);
-    const sessionId = sessionRes.insertedId.toString();
-
-    // Register / update device
-    await devices.updateOne(
-      { userId, deviceId },
-      {
-        $set: {
-          deviceName,
-          platform: 'Web',
-          browser: 'Browser',
-          lastActiveAt: new Date(),
-        },
-        $setOnInsert: {
-          createdAt: new Date(),
-        },
-      },
-      { upsert: true }
+    // 2. Track device
+    await queryPg(
+      `INSERT INTO devices (user_id, device_id, device_name, last_seen_at)
+       VALUES ($1, $2, $3, NOW())
+       ON CONFLICT (user_id, device_id) DO UPDATE SET device_name = $3, last_seen_at = NOW()`,
+      [userId, deviceId, deviceName]
     );
 
+    // 3. Issue Tokens
     const refreshToken = jwt.sign(
-      { sessionId, userId: userId.toString() },
+      { sessionId, userId },
       env.JWT_REFRESH_SECRET,
       { expiresIn: '30d' }
     );
 
     const accessToken = jwt.sign(
       {
-        sub: userId.toString(),
-        userId: userId.toString(),
+        sub: userId,
+        userId,
         username,
         email,
         sessionId,
@@ -354,10 +313,11 @@ export class AuthService {
       { expiresIn: '15m' }
     );
 
-    await sessions.updateOne(
-      { _id: sessionRes.insertedId },
-      { $set: { refreshTokenHash: this.hashToken(refreshToken) } }
-    );
+    // 4. Update session with refresh token hash
+    await queryPg('UPDATE sessions SET refresh_token_hash = $1 WHERE id = $2', [
+      this.hashToken(refreshToken),
+      sessionId,
+    ]);
 
     return {
       accessToken,

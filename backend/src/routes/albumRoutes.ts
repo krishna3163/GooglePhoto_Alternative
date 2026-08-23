@@ -1,29 +1,24 @@
 import { Router, Response, NextFunction } from 'express';
-import { ObjectId } from 'mongodb';
-import { collections } from '../config/database.js';
+import { queryPg } from '../config/database.js';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { AppError } from '../middleware/errorHandler.js';
-import type { AlbumDocument } from '../types/index.js';
 
 const router = Router();
 
 // GET /api/v1/albums
 router.get('/', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const userObjectId = new ObjectId(req.user!.id);
-    const albumsColl = collections.albums();
-
-    const albums = await albumsColl.find({ userId: userObjectId }).toArray();
+    const resAlbums = await queryPg('SELECT * FROM albums WHERE user_id = $1 ORDER BY created_at DESC', [req.user!.id]);
     res.json({
       success: true,
-      data: albums.map((a) => ({
+      data: resAlbums.rows.map((a) => ({
         id: a.id,
-        vaultId: a.vaultId,
+        vaultId: a.vault_id,
         name: a.name,
         description: a.description,
-        mediaIds: a.mediaIds,
-        coverMediaId: a.coverMediaId,
-        createdAt: a.createdAt.toISOString(),
+        mediaIds: [],
+        coverMediaId: a.cover_media_id,
+        createdAt: a.created_at.toISOString(),
       })),
     });
   } catch (err) {
@@ -34,36 +29,30 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response, next: NextF
 // POST /api/v1/albums
 router.post('/', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const userObjectId = new ObjectId(req.user!.id);
-    const albumsColl = collections.albums();
-    const { id, name, description, vaultId, mediaIds, coverMediaId } = req.body || {};
+    const { id, name, description, vaultId, coverMediaId } = req.body || {};
 
     if (!name) {
       throw new AppError(400, 'MISSING_NAME', 'Album name is required');
     }
 
-    const doc: AlbumDocument = {
-      id: id || crypto.randomUUID(),
-      userId: userObjectId,
-      vaultId: vaultId || 'default',
-      name: name.trim(),
-      description,
-      mediaIds: mediaIds || [],
-      coverMediaId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const albumId = id || crypto.randomUUID();
+    const insertRes = await queryPg(
+      `INSERT INTO albums (id, user_id, vault_id, name, description, cover_media_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [albumId, req.user!.id, vaultId || 'default', name.trim(), description || null, coverMediaId || null]
+    );
 
-    await albumsColl.insertOne(doc);
+    const doc = insertRes.rows[0];
     res.status(201).json({
       success: true,
       data: {
         id: doc.id,
         name: doc.name,
         description: doc.description,
-        mediaIds: doc.mediaIds,
-        coverMediaId: doc.coverMediaId,
-        createdAt: doc.createdAt.toISOString(),
+        mediaIds: [],
+        coverMediaId: doc.cover_media_id,
+        createdAt: doc.created_at.toISOString(),
       },
     });
   } catch (err) {
@@ -74,10 +63,7 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response, next: Next
 // DELETE /api/v1/albums/:id
 router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const userObjectId = new ObjectId(req.user!.id);
-    const albumsColl = collections.albums();
-
-    await albumsColl.deleteOne({ userId: userObjectId, id: req.params.id });
+    await queryPg('DELETE FROM albums WHERE user_id = $1 AND id = $2', [req.user!.id, req.params.id]);
     res.json({ success: true, message: 'Album deleted' });
   } catch (err) {
     next(err);

@@ -1,6 +1,4 @@
-import { ObjectId } from 'mongodb';
-import { collections } from '../config/database.js';
-import type { MediaDocument } from '../types/index.js';
+import { queryPg } from '../config/database.js';
 
 export interface LegacyMediaRecord {
   id: string;
@@ -51,85 +49,65 @@ export class MigrationService {
     skippedMedia: number;
     migratedAlbums: number;
   }> {
-    const userObjectId = new ObjectId(userId);
-    const mediaColl = collections.media();
-    const albumsColl = collections.albums();
-    const syncRevs = collections.syncRevisions();
-
     let migratedMedia = 0;
     let skippedMedia = 0;
     let migratedAlbums = 0;
 
     // 1. Process Media Records
     for (const item of payload.media || []) {
-      const existing = await mediaColl.findOne({ userId: userObjectId, id: item.id });
-      if (existing) {
+      const existing = await queryPg('SELECT id FROM media WHERE user_id = $1 AND id = $2 LIMIT 1', [userId, item.id]);
+      if (existing.rows.length > 0) {
         skippedMedia++;
         continue;
       }
 
       const mediaType = item.mediaType || (item.fileName?.toLowerCase().endsWith('.mp4') ? 'video' : 'image');
 
-      const doc: MediaDocument = {
-        id: item.id,
-        userId: userObjectId,
-        vaultId: item.vaultId || 'default',
-        fileName: item.fileName,
-        mimeType: item.mimeType || (mediaType === 'video' ? 'video/mp4' : 'image/jpeg'),
-        mediaType,
-        size: item.fileSizeBytes || 1024 * 1024,
-        favorite: !!item.isFavourite,
-        trashed: !!item.isTrash,
-        albumIds: item.albumIds || [],
-        tags: item.tags || [],
-        exifSummary: item.exif || {},
-        telegram: {
-          original: {
-            chatId: item.chatId || 'legacy_chat',
-            messageId: item.messageId || 0,
-            fileId: item.fileId || `legacy_file_${item.id}`,
-          },
-        },
-        encryption: {
-          version: item.encryptionMetadata?.v || 1,
-          algorithm: 'AES-256-GCM',
-          iv: item.encryptionMetadata?.iv || 'legacy_iv',
-          salt: item.encryptionMetadata?.salt,
-        },
+      await queryPg(
+        `INSERT INTO media (
+          id, user_id, vault_id, file_name, mime_type, media_type, file_size,
+          is_favorite, is_deleted, telegram_chat_id, telegram_message_id, telegram_file_id,
+          encryption_version, encryption_iv, encrypted_metadata, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
+        [
+          item.id,
+          userId,
+          item.vaultId || 'default',
+          item.fileName,
+          item.mimeType || (mediaType === 'video' ? 'video/mp4' : 'image/jpeg'),
+          mediaType,
+          item.fileSizeBytes || 1024 * 1024,
+          !!item.isFavourite,
+          !!item.isTrash,
+          item.chatId || 'legacy_chat',
+          item.messageId || 0,
+          item.fileId || `legacy_file_${item.id}`,
+          item.encryptionMetadata?.v || 1,
+          item.encryptionMetadata?.iv || 'legacy_iv',
+          JSON.stringify(item.exif || {}),
+          item.timestamp ? new Date(item.timestamp) : new Date(),
+        ]
+      );
 
-        createdAt: item.timestamp ? new Date(item.timestamp) : new Date(),
-        updatedAt: new Date(),
-      };
-
-      await mediaColl.insertOne(doc);
       migratedMedia++;
     }
 
     // 2. Process Album Records
     for (const album of payload.albums || []) {
-      await albumsColl.updateOne(
-        { userId: userObjectId, id: album.id },
-        {
-          $setOnInsert: {
-            id: album.id,
-            userId: userObjectId,
-            vaultId: album.vaultId || 'default',
-            name: album.name || 'Untitled Album',
-            mediaIds: album.photoIds || [],
-            createdAt: album.createdAt ? new Date(album.createdAt) : new Date(),
-            updatedAt: new Date(),
-          },
-        },
-        { upsert: true }
+      await queryPg(
+        `INSERT INTO albums (id, user_id, vault_id, name, description, created_at)
+         VALUES ($1, $2, $3, $4, '', $5)
+         ON CONFLICT (id) DO NOTHING`,
+        [album.id, userId, album.vaultId || 'default', album.name || 'Untitled Album', album.createdAt ? new Date(album.createdAt) : new Date()]
       );
       migratedAlbums++;
     }
 
-    // Increment revision
-    await syncRevs.updateOne(
-      { userId: userObjectId },
-      { $inc: { currentRevision: 1 }, $set: { updatedAt: new Date() } },
-      { upsert: true }
+    // 3. Create Sync Event
+    await queryPg(
+      `INSERT INTO sync_events (user_id, entity_type, entity_id, operation, sync_version, payload)
+       VALUES ($1, 'library', $1, 'MIGRATE', (SELECT COALESCE(MAX(sync_version), 0) + 1 FROM sync_events WHERE user_id = $1), $2)`,
+      [userId, JSON.stringify({ migratedMedia, migratedAlbums })]
     );
 
     return {

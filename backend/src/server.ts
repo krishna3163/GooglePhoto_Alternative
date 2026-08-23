@@ -7,7 +7,7 @@ async function bootstrap() {
     console.log('Starting TeleGphoto Backend Service...');
     
     // Connect to database if configured
-    await connectDatabase().catch((err) => {
+    await connectDatabase().catch((err: any) => {
       console.warn('Database initialization warning:', err?.message || err);
     });
 

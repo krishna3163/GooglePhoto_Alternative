@@ -1,8 +1,6 @@
-import { ObjectId } from 'mongodb';
-import { collections } from '../config/database.js';
+import { queryPg } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { TelegramStorageService } from './telegramStorage.js';
-import type { MediaDocument } from '../types/index.js';
 
 export interface CreateMediaInput {
   id: string; // Stable UUID
@@ -31,30 +29,22 @@ export class MediaService {
   public static async uploadMedia(
     userId: string,
     input: CreateMediaInput
-  ): Promise<MediaDocument> {
-    const userObjectId = new ObjectId(userId);
-    const mediaColl = collections.media();
-    const telegramColl = collections.telegramConnections();
-    const syncRevs = collections.syncRevisions();
-
-    // Check if media with this ID already exists
-    const existing = await mediaColl.findOne({ userId: userObjectId, id: input.id });
-    if (existing) {
-      return existing;
+  ): Promise<any> {
+    // 1. Check existing media
+    const existing = await queryPg('SELECT * FROM media WHERE user_id = $1 AND id = $2 LIMIT 1', [userId, input.id]);
+    if (existing.rows.length > 0) {
+      return existing.rows[0];
     }
 
-    // Resolve user Telegram connection
-    const tgConn = await telegramColl.findOne({ userId: userObjectId });
-    const chatId = tgConn?.chatId || 'mock_chat_id';
+    const chatId = 'mock_chat_id';
 
-    // 1. Upload encrypted main file to Telegram
+    // 2. Upload to Telegram
     const mainUpload = await TelegramStorageService.uploadEncryptedMedia(
       input.fileBuffer,
       input.fileName,
       chatId
     );
 
-    // 2. Upload encrypted thumbnail if provided
     let thumbUpload: any = undefined;
     if (input.thumbnailBuffer && input.thumbnailBuffer.length > 0) {
       thumbUpload = await TelegramStorageService.uploadEncryptedMedia(
@@ -64,51 +54,55 @@ export class MediaService {
       );
     }
 
-    // 3. Create Media Record in MongoDB
-    const doc: MediaDocument = {
-      id: input.id,
-      userId: userObjectId,
-      vaultId: input.vaultId || 'default',
-      fileName: input.fileName,
-      mimeType: input.mimeType,
-      mediaType: input.mediaType,
-      size: input.size,
-      width: input.width,
-      height: input.height,
-      favorite: !!input.favorite,
-      trashed: false,
-      albumIds: input.albumIds || [],
-      tags: input.tags || [],
-      exifSummary: input.exifSummary || {},
-      telegram: {
-        original: {
-          chatId: mainUpload.chatId,
-          messageId: mainUpload.messageId,
-          fileId: mainUpload.fileId,
-        },
-        thumbnail: thumbUpload
-          ? {
-              chatId: thumbUpload.chatId,
-              messageId: thumbUpload.messageId,
-              fileId: thumbUpload.fileId,
-            }
-          : undefined,
-      },
-      encryption: input.encryption,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    // 3. Ensure Vault exists for user
+    let vaultId = input.vaultId;
+    const vaultCheck = await queryPg('SELECT id FROM vaults WHERE user_id = $1 LIMIT 1', [userId]);
+    if (vaultCheck.rows.length > 0) {
+      vaultId = vaultCheck.rows[0].id;
+    }
 
-    await mediaColl.insertOne(doc);
-
-    // Increment user sync revision
-    await syncRevs.updateOne(
-      { userId: userObjectId },
-      { $inc: { currentRevision: 1 }, $set: { updatedAt: new Date() } },
-      { upsert: true }
+    // 4. Insert into PostgreSQL media table
+    const mediaRes = await queryPg(
+      `INSERT INTO media (
+        id, user_id, vault_id, file_name, mime_type, media_type, file_size, width, height,
+        is_favorite, is_deleted, telegram_chat_id, telegram_message_id, telegram_file_id,
+        encryption_version, encryption_iv, encrypted_metadata
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, FALSE, $11, $12, $13, $14, $15, $16)
+      RETURNING *`,
+      [
+        input.id,
+        userId,
+        vaultId || 'default',
+        input.fileName,
+        input.mimeType,
+        input.mediaType,
+        input.size,
+        input.width || null,
+        input.height || null,
+        !!input.favorite,
+        mainUpload.chatId,
+        mainUpload.messageId,
+        mainUpload.fileId,
+        input.encryption.version || 1,
+        input.encryption.iv || null,
+        JSON.stringify(input.exifSummary || {}),
+      ]
     );
 
-    return doc;
+    // 5. Create Sync Event
+    await queryPg(
+      `INSERT INTO sync_events (user_id, entity_type, entity_id, operation, sync_version, payload)
+       VALUES ($1, 'media', $2, 'CREATE', (SELECT COALESCE(MAX(sync_version), 0) + 1 FROM sync_events WHERE user_id = $1), $3)`,
+      [userId, input.id, JSON.stringify({ fileName: input.fileName, favorite: !!input.favorite })]
+    );
+
+    const row = mediaRes.rows[0];
+    return {
+      id: row.id,
+      fileName: row.file_name,
+      size: Number(row.file_size),
+      createdAt: row.created_at,
+    };
   }
 
   public static async getGalleryMedia(
@@ -122,183 +116,136 @@ export class MediaService {
       cursor?: string;
     }
   ): Promise<{ items: any[]; nextCursor: string | null; hasMore: boolean }> {
-    const userObjectId = new ObjectId(userId);
-    const mediaColl = collections.media();
     const limit = Math.min(100, Math.max(1, options.limit || 50));
+    const params: any[] = [userId, options.trashed === true];
+    let query = 'SELECT * FROM media WHERE user_id = $1 AND is_deleted = $2';
 
-    const query: Record<string, any> = {
-      userId: userObjectId,
-      trashed: options.trashed === true,
-    };
-
-    if (options.vaultId) {
-      query.vaultId = options.vaultId;
-    }
     if (options.favorite === true) {
-      query.favorite = true;
+      query += ' AND is_favorite = TRUE';
     }
     if (options.mediaType && options.mediaType !== 'all') {
-      query.mediaType = options.mediaType;
+      params.push(options.mediaType);
+      query += ` AND media_type = $${params.length}`;
     }
     if (options.cursor) {
-      query.createdAt = { $lt: new Date(options.cursor) };
+      params.push(new Date(options.cursor));
+      query += ` AND created_at < $${params.length}`;
     }
 
-    // Projection optimized for fast gallery rendering
-    const docs = await mediaColl
-      .find(query, {
-        projection: {
-          id: 1,
-          fileName: 1,
-          mimeType: 1,
-          mediaType: 1,
-          size: 1,
-          width: 1,
-          height: 1,
-          favorite: 1,
-          trashed: 1,
-          albumIds: 1,
-          vaultId: 1,
-          'telegram.thumbnail.fileId': 1,
-          'telegram.original.fileId': 1,
-          encryption: 1,
-          createdAt: 1,
-          updatedAt: 1,
-        },
-      })
-      .sort({ createdAt: -1 })
-      .limit(limit + 1)
-      .toArray();
+    params.push(limit + 1);
+    query += ` ORDER BY created_at DESC LIMIT $${params.length}`;
 
-    const hasMore = docs.length > limit;
-    const items = hasMore ? docs.slice(0, limit) : docs;
-    const nextCursor = hasMore ? items[items.length - 1].createdAt.toISOString() : null;
+    const res = await queryPg(query, params);
+    const hasMore = res.rows.length > limit;
+    const items = hasMore ? res.rows.slice(0, limit) : res.rows;
+    const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].created_at.toISOString() : null;
 
     return {
-      items: items.map((d) => ({
-        id: d.id,
-        fileName: d.fileName,
-        mimeType: d.mimeType,
-        mediaType: d.mediaType,
-        size: d.size,
-        width: d.width,
-        height: d.height,
-        favorite: d.favorite,
-        trashed: d.trashed,
-        albumIds: d.albumIds,
-        vaultId: d.vaultId,
-        hasThumbnail: !!d.telegram?.thumbnail?.fileId,
-        encryption: d.encryption,
-        createdAt: d.createdAt.toISOString(),
+      items: items.map((m) => ({
+        id: m.id,
+        fileName: m.file_name,
+        mimeType: m.mime_type,
+        mediaType: m.media_type,
+        size: Number(m.file_size),
+        width: m.width,
+        height: m.height,
+        favorite: m.is_favorite,
+        trashed: m.is_deleted,
+        vaultId: m.vault_id,
+        telegram: {
+          original: {
+            chatId: m.telegram_chat_id,
+            messageId: m.telegram_message_id ? Number(m.telegram_message_id) : 0,
+            fileId: m.telegram_file_id,
+          },
+        },
+        encryption: {
+          version: m.encryption_version,
+          algorithm: 'AES-256-GCM',
+          iv: m.encryption_iv,
+        },
+        createdAt: m.created_at,
+        updatedAt: m.updated_at,
       })),
       nextCursor,
       hasMore,
     };
   }
 
-  public static async getMediaById(userId: string, mediaId: string): Promise<MediaDocument> {
-    const userObjectId = new ObjectId(userId);
-    const mediaColl = collections.media();
-
-    const doc = await mediaColl.findOne({ userId: userObjectId, id: mediaId });
-    if (!doc) {
-      throw new AppError(404, 'MEDIA_NOT_FOUND', 'Media not found');
+  public static async getMediaById(userId: string, mediaId: string): Promise<any> {
+    const res = await queryPg('SELECT * FROM media WHERE user_id = $1 AND id = $2 LIMIT 1', [userId, mediaId]);
+    if (res.rows.length === 0) {
+      throw new AppError(404, 'MEDIA_NOT_FOUND', 'Media asset not found');
     }
-    return doc;
+    return res.rows[0];
   }
 
   public static async downloadEncryptedMedia(userId: string, mediaId: string): Promise<Buffer> {
-    const doc = await this.getMediaById(userId, mediaId);
-    return TelegramStorageService.downloadMediaBuffer(doc.telegram.original.fileId);
+    const media = await this.getMediaById(userId, mediaId);
+    if (!media.telegram_file_id) {
+      throw new AppError(404, 'FILE_NOT_FOUND', 'No remote storage reference found for this media');
+    }
+    return TelegramStorageService.downloadMediaBuffer(media.telegram_file_id);
   }
 
   public static async downloadEncryptedThumbnail(userId: string, mediaId: string): Promise<Buffer> {
-    const doc = await this.getMediaById(userId, mediaId);
-    const fileId = doc.telegram.thumbnail?.fileId || doc.telegram.original.fileId;
-    return TelegramStorageService.downloadMediaBuffer(fileId);
+    const media = await this.getMediaById(userId, mediaId);
+    if (media.telegram_file_id) {
+      return TelegramStorageService.downloadMediaBuffer(media.telegram_file_id);
+    }
+    return Buffer.from('');
   }
 
-  public static async toggleFavorite(userId: string, mediaId: string, favorite?: boolean): Promise<boolean> {
-    const userObjectId = new ObjectId(userId);
-    const mediaColl = collections.media();
-    const syncRevs = collections.syncRevisions();
+  public static async toggleFavorite(userId: string, mediaId: string, favState?: boolean): Promise<boolean> {
+    const current = await this.getMediaById(userId, mediaId);
+    const nextFav = typeof favState === 'boolean' ? favState : !current.is_favorite;
 
-    const doc = await mediaColl.findOne({ userId: userObjectId, id: mediaId });
-    if (!doc) throw new AppError(404, 'MEDIA_NOT_FOUND', 'Media not found');
+    await queryPg('UPDATE media SET is_favorite = $1, updated_at = NOW() WHERE user_id = $2 AND id = $3', [
+      nextFav,
+      userId,
+      mediaId,
+    ]);
 
-    const newFav = typeof favorite === 'boolean' ? favorite : !doc.favorite;
-    await mediaColl.updateOne(
-      { userId: userObjectId, id: mediaId },
-      { $set: { favorite: newFav, updatedAt: new Date() } }
+    await queryPg(
+      `INSERT INTO sync_events (user_id, entity_type, entity_id, operation, sync_version, payload)
+       VALUES ($1, 'media', $2, 'UPDATE', (SELECT COALESCE(MAX(sync_version), 0) + 1 FROM sync_events WHERE user_id = $1), $3)`,
+      [userId, mediaId, JSON.stringify({ isFavorite: nextFav })]
     );
 
-    await syncRevs.updateOne(
-      { userId: userObjectId },
-      { $inc: { currentRevision: 1 }, $set: { updatedAt: new Date() } }
-    );
-
-    return newFav;
+    return nextFav;
   }
 
   public static async moveToTrash(userId: string, mediaId: string): Promise<void> {
-    const userObjectId = new ObjectId(userId);
-    const mediaColl = collections.media();
-    const syncRevs = collections.syncRevisions();
+    await queryPg('UPDATE media SET is_deleted = TRUE, deleted_at = NOW(), updated_at = NOW() WHERE user_id = $1 AND id = $2', [
+      userId,
+      mediaId,
+    ]);
 
-    await mediaColl.updateOne(
-      { userId: userObjectId, id: mediaId },
-      { $set: { trashed: true, deletedAt: new Date(), updatedAt: new Date() } }
-    );
-
-    await syncRevs.updateOne(
-      { userId: userObjectId },
-      { $inc: { currentRevision: 1 }, $set: { updatedAt: new Date() } }
+    await queryPg(
+      `INSERT INTO sync_events (user_id, entity_type, entity_id, operation, sync_version, payload)
+       VALUES ($1, 'media', $2, 'DELETE', (SELECT COALESCE(MAX(sync_version), 0) + 1 FROM sync_events WHERE user_id = $1), $3)`,
+      [userId, mediaId, JSON.stringify({ isDeleted: true })]
     );
   }
 
   public static async restoreFromTrash(userId: string, mediaId: string): Promise<void> {
-    const userObjectId = new ObjectId(userId);
-    const mediaColl = collections.media();
-    const syncRevs = collections.syncRevisions();
+    await queryPg('UPDATE media SET is_deleted = FALSE, deleted_at = NULL, updated_at = NOW() WHERE user_id = $1 AND id = $2', [
+      userId,
+      mediaId,
+    ]);
 
-    await mediaColl.updateOne(
-      { userId: userObjectId, id: mediaId },
-      { $set: { trashed: false, deletedAt: undefined, updatedAt: new Date() } }
-    );
-
-    await syncRevs.updateOne(
-      { userId: userObjectId },
-      { $inc: { currentRevision: 1 }, $set: { updatedAt: new Date() } }
+    await queryPg(
+      `INSERT INTO sync_events (user_id, entity_type, entity_id, operation, sync_version, payload)
+       VALUES ($1, 'media', $2, 'RESTORE', (SELECT COALESCE(MAX(sync_version), 0) + 1 FROM sync_events WHERE user_id = $1), $3)`,
+      [userId, mediaId, JSON.stringify({ isDeleted: false })]
     );
   }
 
   public static async permanentDelete(userId: string, mediaId: string): Promise<void> {
-    const userObjectId = new ObjectId(userId);
-    const mediaColl = collections.media();
-    const syncRevs = collections.syncRevisions();
-
-    const doc = await mediaColl.findOne({ userId: userObjectId, id: mediaId });
-    if (!doc) return;
-
-    // Delete message from Telegram chat
-    if (doc.telegram.original.chatId && doc.telegram.original.messageId) {
-      await TelegramStorageService.deleteMediaMessage(
-        doc.telegram.original.chatId,
-        doc.telegram.original.messageId
-      );
+    const media = await this.getMediaById(userId, mediaId);
+    if (media.telegram_message_id && media.telegram_chat_id) {
+      await TelegramStorageService.deleteMediaMessage(media.telegram_chat_id, Number(media.telegram_message_id));
     }
-    if (doc.telegram.thumbnail?.chatId && doc.telegram.thumbnail?.messageId) {
-      await TelegramStorageService.deleteMediaMessage(
-        doc.telegram.thumbnail.chatId,
-        doc.telegram.thumbnail.messageId
-      );
-    }
-
-    await mediaColl.deleteOne({ userId: userObjectId, id: mediaId });
-
-    await syncRevs.updateOne(
-      { userId: userObjectId },
-      { $inc: { currentRevision: 1 }, $set: { updatedAt: new Date() } }
-    );
+    await queryPg('DELETE FROM media WHERE user_id = $1 AND id = $2', [userId, mediaId]);
   }
 }

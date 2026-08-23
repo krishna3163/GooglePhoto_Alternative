@@ -1,6 +1,5 @@
 import { Router, Response, NextFunction } from 'express';
-import { ObjectId } from 'mongodb';
-import { collections } from '../config/database.js';
+import { queryPg } from '../config/database.js';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 
 const router = Router();
@@ -8,28 +7,24 @@ const router = Router();
 // GET /api/v1/devices
 router.get('/', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const userObjectId = new ObjectId(req.user!.id);
-    const devicesColl = collections.devices();
-    const sessionsColl = collections.sessions();
-
-    const [devices, activeSessions] = await Promise.all([
-      devicesColl.find({ userId: userObjectId }).toArray(),
-      sessionsColl.find({ userId: userObjectId, revokedAt: { $exists: false } }).toArray(),
+    const [devicesRes, sessionsRes] = await Promise.all([
+      queryPg('SELECT * FROM devices WHERE user_id = $1 ORDER BY last_seen_at DESC', [req.user!.id]),
+      queryPg('SELECT device_id FROM sessions WHERE user_id = $1 AND revoked_at IS NULL', [req.user!.id]),
     ]);
 
-    const activeDeviceIds = new Set(activeSessions.map((s) => s.deviceId));
+    const activeDeviceIds = new Set(sessionsRes.rows.map((s) => s.device_id));
 
     res.json({
       success: true,
-      data: devices.map((d) => ({
-        id: d._id!.toString(),
-        deviceId: d.deviceId,
-        deviceName: d.deviceName,
-        platform: d.platform,
-        browser: d.browser,
-        lastActiveAt: d.lastActiveAt.toISOString(),
-        isActive: activeDeviceIds.has(d.deviceId),
-        isCurrent: d.deviceId === req.user?.deviceId,
+      data: devicesRes.rows.map((d) => ({
+        id: d.id,
+        deviceId: d.device_id,
+        deviceName: d.device_name,
+        platform: d.device_type || 'Web',
+        browser: 'Browser',
+        lastActiveAt: d.last_seen_at.toISOString(),
+        isActive: activeDeviceIds.has(d.device_id),
+        isCurrent: d.device_id === req.user?.deviceId,
       })),
     });
   } catch (err) {
@@ -40,13 +35,10 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response, next: NextF
 // POST /api/v1/devices/:id/revoke
 router.post('/:id/revoke', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const userObjectId = new ObjectId(req.user!.id);
-    const sessionsColl = collections.sessions();
-
-    await sessionsColl.updateMany(
-      { userId: userObjectId, deviceId: req.params.id },
-      { $set: { revokedAt: new Date() } }
-    );
+    await queryPg('UPDATE sessions SET revoked_at = NOW() WHERE user_id = $1 AND device_id = $2', [
+      req.user!.id,
+      req.params.id,
+    ]);
 
     res.json({ success: true, message: 'Device session revoked' });
   } catch (err) {
