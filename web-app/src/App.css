@@ -1,123 +1,62 @@
-.app-container {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  background-color: var(--bg-primary);
-  overflow: hidden;
-  position: relative;
-}
-
-.main-wrapper {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  height: 100vh;
-  overflow: hidden;
-  width: 100%;
-}
-
-.content {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: clamp(16px, 4vw, 32px);
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  height: 100%;
-}
-
-.content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.content::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
-}
-
-.content::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
-}
-
-.auth-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 20px;
-  backdrop-filter: blur(10px);
-}
-
-/* ==================== RESPONSIVE LAYOUT ==================== */
-
-@media (max-width: 900px) {
-  .app-container {
-    flex-direction: column;
-  }
-
-  .main-wrapper {
+.telegphoto-app-root {
+    display: flex;
     width: 100vw;
-  }
-
-  .content {
-    padding: 16px;
-    /* Account for potential safe areas on mobile devices */
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
-  }
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    position: relative;
 }
 
-/* ==================== SAFE AREA SUPPORT ==================== */
-
-@supports (padding: max(0px)) {
-  .main-wrapper {
-    padding-left: max(0px, env(safe-area-inset-left));
-    padding-right: max(0px, env(safe-area-inset-right));
-  }
+.tg-center-viewport {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    min-width: 0;
+    overflow: hidden;
+    background: #080B10;
+    position: relative;
 }
 
-/* ==================== TOUCH AND INTERACTIVITY ==================== */
-
-@media (prefers-reduced-motion: reduce) {
-  .content {
-    scroll-behavior: auto;
-  }
+.tg-view-scroll-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-/* ==================== ACCESSIBILITY ==================== */
-
-/* Focus visible for keyboard navigation */
-.app-container:focus-visible {
-  outline: 2px solid var(--accent-blue, #8ab4f8);
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
-/* High contrast mode */
-@media (prefers-contrast: more) {
-  .app-container {
-    border: 1px solid currentColor;
-  }
-
-  .content {
-    border-color: currentColor;
-  }
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
-/* ==================== PRINT STYLES ==================== */
+/* Responsive adjustments */
+@media (max-width: 1150px) {
+    .tg-center-viewport {
+        width: 100%;
+    }
+}
 
-@media print {
-  .app-container {
-    width: 100%;
-    height: auto;
-  }
-
-  .main-wrapper {
-    height: auto;
-  }
-
-  .content {
-    overflow: visible;
-    padding: 0;
-  }
+@media (max-width: 768px) {
+    .telegphoto-app-root {
+        flex-direction: column;
+    }
 }

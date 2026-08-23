@@ -1,0 +1,122 @@
+.share-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.share-modal-card {
+    width: 100%;
+    max-width: 480px;
+    background: #0D1219;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-xl);
+    padding: 22px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+}
+
+.share-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.share-modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.share-close-btn {
+    color: var(--text-secondary);
+    padding: 4px;
+    border-radius: 50%;
+}
+
+.share-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.share-security-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 201, 40, 0.08);
+    border: 1px solid rgba(255, 201, 40, 0.2);
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    color: #F8FAFC;
+    margin-bottom: 18px;
+}
+
+.share-link-box {
+    display: flex;
+    align-items: center;
+    background: #171F2B;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-full);
+    padding: 4px 6px 4px 16px;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.share-link-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    font-size: 12.5px;
+}
+
+.share-copy-btn {
+    background: #FFC928;
+    color: #080B10;
+    font-weight: 800;
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background var(--transition-fast);
+}
+
+.share-copy-btn:hover {
+    background: #FFD75A;
+}
+
+.share-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.share-method-btn {
+    background: #171F2B;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-lg);
+    padding: 18px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #F8FAFC;
+    transition: all var(--transition-fast);
+}
+
+.share-method-btn:hover {
+    background: #202B3B;
+    border-color: rgba(255, 201, 40, 0.3);
+    transform: translateY(-2px);
+}

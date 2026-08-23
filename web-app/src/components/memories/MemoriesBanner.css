@@ -1,0 +1,156 @@
+.memories-section-wrapper {
+    padding: 18px 24px 8px 24px;
+}
+
+.memories-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.memories-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.2px;
+}
+
+.memories-sparkle-icon {
+    color: #FFC928;
+}
+
+.memories-view-all-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #FFC928;
+    transition: color var(--transition-fast);
+}
+
+.memories-view-all-link:hover {
+    color: #FFD75A;
+}
+
+.memories-carousel-track-wrapper {
+    position: relative;
+}
+
+.memories-cards-scroll-track {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+}
+
+.memories-cards-scroll-track::-webkit-scrollbar {
+    display: none;
+}
+
+.memory-story-card {
+    flex: 0 0 175px;
+    height: 230px;
+    border-radius: var(--radius-xl);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    background: #121923;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+    transition: box-shadow var(--transition-fast);
+}
+
+.memory-story-card:hover {
+    box-shadow: 0 14px 36px rgba(255, 201, 40, 0.25);
+    border-color: rgba(255, 201, 40, 0.4);
+}
+
+.memory-card-bg-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.memory-card-badge-top {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+}
+
+.memory-pill-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #F1F5F9;
+}
+
+.memory-card-bottom-scrim {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.4) 30%, rgba(0, 0, 0, 0.95) 100%);
+    padding: 16px 12px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.memory-headline {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0;
+    line-height: 1.25;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.memory-subheadline {
+    font-size: 11px;
+    color: #CBD5E1;
+    font-weight: 500;
+}
+
+.memories-carousel-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(13, 18, 25, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #F1F5F9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+    transition: all var(--transition-fast);
+    z-index: 10;
+}
+
+.memories-carousel-nav-btn:hover {
+    background: #FFC928;
+    color: #080B10;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 0 16px rgba(255, 201, 40, 0.5);
+}
+
+.memories-carousel-nav-btn.right {
+    right: -14px;
+}

@@ -1,0 +1,76 @@
+.bulk-action-bar-dock {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #171F2B;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: var(--radius-full);
+    padding: 8px 16px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 201, 40, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 500;
+    backdrop-filter: blur(24px);
+    user-select: none;
+}
+
+.bulk-selected-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #F1F5F9;
+}
+
+.bulk-clear-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.bulk-clear-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #FFFFFF;
+}
+
+.bulk-divider {
+    width: 1px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.bulk-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bulk-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #E2E8F0;
+    transition: all var(--transition-fast);
+}
+
+.bulk-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFC928;
+}
+
+.bulk-action-btn.danger:hover {
+    background: rgba(255, 92, 108, 0.15);
+    color: #FF5C6C;
+}

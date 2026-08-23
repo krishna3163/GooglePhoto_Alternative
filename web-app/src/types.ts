@@ -68,6 +68,7 @@ export interface PhotoAsset {
         lng?: number;
     };
     faces?: string[];
+    vaultId?: string;
     messageId?: number;
     fileId?: string;
 }
@@ -75,6 +76,7 @@ export interface PhotoAsset {
 export interface Album {
     id: string;
     name: string;
+    title?: string;
     coverPhotoUrl?: string;
     createdAt: string;
     photoIds: string[];
