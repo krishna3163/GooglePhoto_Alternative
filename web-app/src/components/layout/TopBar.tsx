@@ -15,6 +15,7 @@ import {
     Layers
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import SyncStatusIndicator from '../sync/SyncStatusIndicator';
 import './TopBar.css';
 
 export interface FilterState {
@@ -43,6 +44,10 @@ interface TopBarProps {
     notifications: { id: string; title: string; desc: string; time: string; unread: boolean }[];
     onClearNotifications: () => void;
     searchInputRef?: React.RefObject<HTMLInputElement | null>;
+    syncStatus?: 'synced' | 'syncing' | 'failed' | 'offline' | 'uninitialized';
+    syncPendingCount?: number;
+    lastSyncedText?: string;
+    onOpenSyncActivity?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -64,6 +69,10 @@ export const TopBar: React.FC<TopBarProps> = ({
     notifications,
     onClearNotifications,
     searchInputRef,
+    syncStatus = 'synced',
+    syncPendingCount = 0,
+    lastSyncedText,
+    onOpenSyncActivity,
 }) => {
     const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -206,6 +215,16 @@ export const TopBar: React.FC<TopBarProps> = ({
                         )}
                     </AnimatePresence>
                 </div>
+
+                {/* Cloud Sync Status Indicator */}
+                {onOpenSyncActivity && (
+                    <SyncStatusIndicator
+                        status={syncStatus}
+                        pendingCount={syncPendingCount}
+                        lastSyncedText={lastSyncedText}
+                        onClick={onOpenSyncActivity}
+                    />
+                )}
 
                 {/* Upload Button */}
                 <button className="topbar-yellow-upload-btn" onClick={onUploadClick}>

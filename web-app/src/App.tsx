@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import type { TelegramConfig, PhotoAsset, Album } from './types';
 import {
     getStoredConfig,
@@ -11,8 +11,27 @@ import { generateMemories } from './intelligence/memoryService';
 import type { MemoryHighlight } from './intelligence/types';
 import { uploadFileToTelegram, getFileDownloadUrl, deleteTelegramMessage } from './services/telegramService';
 import { extractTextFromImage } from './services/ocrService';
-import { storeVectorRecord, deleteVectorRecord, CURRENT_MODEL_VERSION } from './intelligence/vectorIndexService';
+import { storeVectorRecord, deleteVectorRecord, clearVectorIndex, CURRENT_MODEL_VERSION } from './intelligence/vectorIndexService';
 import { generateTextEmbedding } from './intelligence/embeddingService';
+import { initializeVault } from './services/cryptoService';
+
+// Cloud Sync Engine
+import type { LocalSyncState, SyncPreferences, SyncOperation } from './sync/syncTypes';
+import { performSync, performInitialOnboardingSync } from './sync/syncService';
+import {
+    enqueueSyncOperation,
+    getStoredSyncQueue,
+    retryFailedOperations,
+} from './sync/syncQueue';
+import {
+    getLocalSyncState,
+    getStoredSyncPreferences,
+    saveSyncPreferences,
+    updateLocalSyncState,
+} from './sync/syncStateService';
+import SyncActivityModal from './components/sync/SyncActivityModal';
+import OnboardingSyncOverlay from './components/sync/OnboardingSyncOverlay';
+import SyncSettingsView from './components/views/SyncSettingsView';
 
 // Layout & Components
 import Sidebar, { type VaultInfo } from './components/layout/Sidebar';
@@ -79,6 +98,19 @@ const App: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [userName] = useState(() => getStoredUserName() || 'Krishna');
     const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+    // Master Vault Key in memory
+    const [masterVaultKey, setMasterVaultKey] = useState<CryptoKey | null>(null);
+
+    // Sync State
+    const [syncState, setSyncState] = useState<LocalSyncState>(getLocalSyncState);
+    const [syncPreferences, setSyncPreferences] = useState<SyncPreferences>(getStoredSyncPreferences);
+    const [pendingOperations, setPendingOperations] = useState<SyncOperation[]>(getStoredSyncQueue);
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [showSyncActivityModal, setShowSyncActivityModal] = useState(false);
+    const [isOnboardingSync, setIsOnboardingSync] = useState(false);
+    const [onboardingSyncedCount, setOnboardingSyncedCount] = useState(0);
+    const [onboardingTotalCount, setOnboardingTotalCount] = useState(0);
 
     // Navigation & View State
     const [activeTab, setActiveTab] = useState('Photos');
@@ -165,8 +197,96 @@ const App: React.FC = () => {
     ]);
 
     // -----------------------------------------------------------------------
-    // Initial Setup & Keyboard Shortcuts
+    // Master Vault Key Initialization & Sync Lifecycle
     // -----------------------------------------------------------------------
+    useEffect(() => {
+        const initCryptoAndSync = async () => {
+            try {
+                // Initialize in-memory vault key
+                const { masterKey } = await initializeVault('TeleGphotoMasterVaultKey');
+                setMasterVaultKey(masterKey);
+
+                // Check if device is new / empty and needs onboarding sync
+                const remoteRef = localStorage.getItem('telegphoto_remote_manifest_ref');
+                if (photos.length === 0 && config && remoteRef) {
+                    setIsOnboardingSync(true);
+                    const res = await performInitialOnboardingSync(config, masterKey, (synced, total) => {
+                        setOnboardingSyncedCount(synced);
+                        setOnboardingTotalCount(total);
+                    });
+                    if (res) {
+                        setPhotos(res.photos);
+                        setAlbums(res.albums);
+                        setVaults(res.vaults);
+                        localStorage.setItem('uploaded_photos', JSON.stringify(res.photos));
+                        localStorage.setItem('telegphoto_albums', JSON.stringify(res.albums));
+                        addToast(`Restored ${res.photos.length} items from Telegram Cloud`, 'success');
+                    }
+                    setIsOnboardingSync(false);
+                }
+            } catch (err) {
+                console.warn('Crypto/Sync initialization notice:', err);
+                setIsOnboardingSync(false);
+            }
+        };
+
+        initCryptoAndSync();
+    }, [config]);
+
+    // Trigger full background sync
+    const triggerSync = useCallback(async () => {
+        if (!config || isSyncing) return;
+        setIsSyncing(true);
+
+        const key = masterVaultKey || (await initializeVault('TeleGphotoMasterVaultKey')).masterKey;
+        if (!masterVaultKey) setMasterVaultKey(key);
+
+        const result = await performSync(config, key, photos, albums, vaults);
+        if (result.success) {
+            setPhotos(result.photos);
+            setAlbums(result.albums);
+            setVaults(result.vaults);
+            localStorage.setItem('uploaded_photos', JSON.stringify(result.photos));
+            localStorage.setItem('telegphoto_albums', JSON.stringify(result.albums));
+            setSyncState(getLocalSyncState());
+            setPendingOperations(getStoredSyncQueue());
+            if (result.conflictsResolved > 0) {
+                addToast(`Synced (${result.conflictsResolved} conflicts merged)`, 'info');
+            }
+        }
+        setIsSyncing(false);
+    }, [config, isSyncing, masterVaultKey, photos, albums, vaults]);
+
+    // Periodic Background Sync & Network Listeners
+    useEffect(() => {
+        const handleOnline = () => {
+            updateLocalSyncState({ status: 'synced' });
+            setSyncState(getLocalSyncState());
+            triggerSync();
+        };
+
+        const handleOffline = () => {
+            updateLocalSyncState({ status: 'offline' });
+            setSyncState(getLocalSyncState());
+        };
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        const interval = setInterval(() => {
+            if (navigator.onLine && syncPreferences.backgroundSync) {
+                triggerSync();
+            }
+        }, 60000);
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+            clearInterval(interval);
+        };
+    }, [triggerSync, syncPreferences.backgroundSync]);
+
+    // Initial Splash Timer & Keyboard Shortcuts
     useEffect(() => {
         const timer = setTimeout(() => setLoading(false), 2200);
         return () => clearTimeout(timer);
@@ -188,6 +308,7 @@ const App: React.FC = () => {
                 setShowAddToAlbumPhotoId(null);
                 setActiveStoryMemory(null);
                 setFullscreenPhoto(null);
+                setShowSyncActivityModal(false);
             }
         };
 
@@ -226,7 +347,7 @@ const App: React.FC = () => {
     const usedStorageGB = usedBytes / (1024 * 1024 * 1024);
 
     // -----------------------------------------------------------------------
-    // Photo CRUD Operations
+    // Photo CRUD Operations with Sync Queue Integration
     // -----------------------------------------------------------------------
     const handleToggleFavorite = (id: string, e?: React.MouseEvent) => {
         e?.stopPropagation();
@@ -235,6 +356,10 @@ const App: React.FC = () => {
                 if (p.id === id) {
                     const nextFav = !p.isFavourite;
                     addToast(nextFav ? '⭐ Added to Favorites' : 'Removed from Favorites', 'info');
+
+                    // Enqueue sync operation
+                    enqueueSyncOperation('UPDATE_MEDIA', id, p.vaultId || activeVaultId, { isFavourite: nextFav }, syncPreferences.deviceId);
+
                     return { ...p, isFavourite: nextFav };
                 }
                 return p;
@@ -246,6 +371,8 @@ const App: React.FC = () => {
         if (selectedPhoto?.id === id) {
             setSelectedPhoto(prev => prev ? { ...prev, isFavourite: !prev.isFavourite } : null);
         }
+
+        triggerSync();
     };
 
     const handleSoftDelete = (id: string) => {
@@ -258,9 +385,10 @@ const App: React.FC = () => {
             return updated;
         });
 
+        enqueueSyncOperation('DELETE_MEDIA', id, target.vaultId || activeVaultId, { isTrash: true }, syncPreferences.deviceId);
+
         if (selectedPhoto?.id === id) setSelectedPhoto(null);
 
-        // Add activity
         setActivities(prev => [
             {
                 id: `act-${Date.now()}`,
@@ -273,6 +401,7 @@ const App: React.FC = () => {
         ]);
 
         addToast(`Moved "${target.fileName}" to Trash`, 'info', () => handleRestorePhoto(id));
+        triggerSync();
     };
 
     const handleRestorePhoto = (id: string) => {
@@ -284,6 +413,8 @@ const App: React.FC = () => {
         });
 
         if (target) {
+            enqueueSyncOperation('RESTORE_MEDIA', id, target.vaultId || activeVaultId, { isTrash: false }, syncPreferences.deviceId);
+
             setActivities(prev => [
                 {
                     id: `act-${Date.now()}`,
@@ -297,6 +428,7 @@ const App: React.FC = () => {
         }
 
         addToast('Photo restored to library', 'success');
+        triggerSync();
     };
 
     const handlePermanentDelete = async (id: string) => {
@@ -314,6 +446,8 @@ const App: React.FC = () => {
         // Purge vector index
         await deleteVectorRecord(id);
 
+        enqueueSyncOperation('PERMANENT_DELETE_MEDIA', id, target.vaultId || activeVaultId, {}, syncPreferences.deviceId);
+
         setPhotos(prev => {
             const updated = prev.filter(p => p.id !== id);
             localStorage.setItem('uploaded_photos', JSON.stringify(updated));
@@ -321,6 +455,7 @@ const App: React.FC = () => {
         });
 
         addToast('Permanently deleted photo', 'error');
+        triggerSync();
     };
 
     const handleEmptyTrash = async () => {
@@ -334,6 +469,7 @@ const App: React.FC = () => {
                 }
             }
             await deleteVectorRecord(p.id);
+            enqueueSyncOperation('PERMANENT_DELETE_MEDIA', p.id, p.vaultId || activeVaultId, {}, syncPreferences.deviceId);
         }
 
         setPhotos(prev => {
@@ -343,6 +479,7 @@ const App: React.FC = () => {
         });
 
         addToast(`Permanently deleted ${count} items from Trash`, 'error');
+        triggerSync();
     };
 
     const handleSaveEdits = (photoId: string, edits: {
@@ -356,10 +493,12 @@ const App: React.FC = () => {
         setPhotos(prev => {
             const updated = prev.map(p => {
                 if (p.id === photoId) {
-                    return {
+                    const next = {
                         ...p,
                         fileName: edits.fileName || p.fileName,
                     };
+                    enqueueSyncOperation('UPDATE_MEDIA', photoId, p.vaultId || activeVaultId, { fileName: next.fileName }, syncPreferences.deviceId);
+                    return next;
                 }
                 return p;
             });
@@ -372,6 +511,7 @@ const App: React.FC = () => {
         }
 
         addToast('Non-destructive edits saved', 'success');
+        triggerSync();
     };
 
     // -----------------------------------------------------------------------
@@ -389,23 +529,37 @@ const App: React.FC = () => {
 
     const handleFavoriteAllSelected = () => {
         setPhotos(prev => {
-            const updated = prev.map(p => selectedIds.has(p.id) ? { ...p, isFavourite: true } : p);
+            const updated = prev.map(p => {
+                if (selectedIds.has(p.id)) {
+                    enqueueSyncOperation('UPDATE_MEDIA', p.id, p.vaultId || activeVaultId, { isFavourite: true }, syncPreferences.deviceId);
+                    return { ...p, isFavourite: true };
+                }
+                return p;
+            });
             localStorage.setItem('uploaded_photos', JSON.stringify(updated));
             return updated;
         });
         addToast(`Starred ${selectedIds.size} photos`, 'success');
         setSelectedIds(new Set());
+        triggerSync();
     };
 
     const handleTrashAllSelected = () => {
         const count = selectedIds.size;
         setPhotos(prev => {
-            const updated = prev.map(p => selectedIds.has(p.id) ? { ...p, isTrash: true, deletedAt: new Date().toISOString() } : p);
+            const updated = prev.map(p => {
+                if (selectedIds.has(p.id)) {
+                    enqueueSyncOperation('DELETE_MEDIA', p.id, p.vaultId || activeVaultId, { isTrash: true }, syncPreferences.deviceId);
+                    return { ...p, isTrash: true, deletedAt: new Date().toISOString() };
+                }
+                return p;
+            });
             localStorage.setItem('uploaded_photos', JSON.stringify(updated));
             return updated;
         });
         addToast(`Moved ${count} photos to Trash`, 'info');
         setSelectedIds(new Set());
+        triggerSync();
     };
 
     // -----------------------------------------------------------------------
@@ -424,6 +578,8 @@ const App: React.FC = () => {
         setAlbums(updated);
         localStorage.setItem('telegphoto_albums', JSON.stringify(updated));
 
+        enqueueSyncOperation('CREATE_ALBUM', newAlbum.id, activeVaultId, newAlbum, syncPreferences.deviceId);
+
         setActivities(prev => [
             {
                 id: `act-${Date.now()}`,
@@ -436,19 +592,23 @@ const App: React.FC = () => {
         ]);
 
         addToast(`Album "${name}" created`, 'success');
+        triggerSync();
     };
 
     const handleDeleteAlbum = (albumId: string) => {
         const updated = albums.filter(a => a.id !== albumId);
         setAlbums(updated);
         localStorage.setItem('telegphoto_albums', JSON.stringify(updated));
+        enqueueSyncOperation('DELETE_ALBUM', albumId, activeVaultId, {}, syncPreferences.deviceId);
         addToast('Album deleted (photos preserved)', 'info');
+        triggerSync();
     };
 
     const handleAddPhotosToAlbum = (albumId: string, photoIds: string[]) => {
         const updated = albums.map(a => {
             if (a.id === albumId) {
                 const combined = Array.from(new Set([...a.photoIds, ...photoIds]));
+                enqueueSyncOperation('UPDATE_ALBUM', albumId, activeVaultId, { photoIds: combined }, syncPreferences.deviceId);
                 return { ...a, photoIds: combined };
             }
             return a;
@@ -457,6 +617,7 @@ const App: React.FC = () => {
         localStorage.setItem('telegphoto_albums', JSON.stringify(updated));
         addToast(`Added ${photoIds.length} photos to album`, 'success');
         setSelectedIds(new Set());
+        triggerSync();
     };
 
     // -----------------------------------------------------------------------
@@ -473,6 +634,8 @@ const App: React.FC = () => {
         setVaults(prev => [...prev, newVault]);
         setActiveVaultId(newVault.id);
 
+        enqueueSyncOperation('CREATE_VAULT', newVault.id, newVault.id, newVault, syncPreferences.deviceId);
+
         setActivities(prev => [
             {
                 id: `act-${Date.now()}`,
@@ -485,6 +648,7 @@ const App: React.FC = () => {
         ]);
 
         addToast(`Switched to "${vaultData.name}"`, 'success');
+        triggerSync();
     };
 
     // -----------------------------------------------------------------------
@@ -569,6 +733,9 @@ const App: React.FC = () => {
                     return updated;
                 });
 
+                // Enqueue sync operation
+                enqueueSyncOperation('CREATE_MEDIA', newAsset.id, activeVaultId, newAsset, syncPreferences.deviceId);
+
                 setUploadQueue(q => q.map(i => i.id === item.id ? { ...i, status: 'completed', progress: 100 } : i));
 
                 setActivities(prev => [
@@ -587,6 +754,33 @@ const App: React.FC = () => {
                 setUploadQueue(q => q.map(i => i.id === item.id ? { ...i, status: 'failed', error: err?.message || 'Failed' } : i));
             }
         }
+
+        // Trigger remote manifest sync
+        triggerSync();
+    };
+
+    // Maintenance handlers
+    const handleRebuildSearchIndex = async () => {
+        addToast('Rebuilding search vector index...', 'info');
+        await clearVectorIndex();
+        for (const photo of activeNonTrashPhotos) {
+            const text = `${photo.fileName} ${photo.ocrText || ''}`;
+            const embedding = Array.from(generateTextEmbedding(text));
+            await storeVectorRecord({
+                mediaId: photo.id,
+                vaultId: photo.vaultId || activeVaultId,
+                modelVersion: CURRENT_MODEL_VERSION,
+                embedding,
+                updatedAt: new Date().toISOString(),
+            });
+        }
+        addToast('Search vector index rebuilt', 'success');
+    };
+
+    const handleClearLocalCache = () => {
+        localStorage.removeItem('telegphoto_sync_queue');
+        setPendingOperations([]);
+        addToast('Local decrypted cache cleared', 'info');
     };
 
     if (loading) {
@@ -644,6 +838,10 @@ const App: React.FC = () => {
                     notifications={notifications}
                     onClearNotifications={() => setNotifications([])}
                     searchInputRef={searchInputRef}
+                    syncStatus={syncState.status}
+                    syncPendingCount={pendingOperations.length}
+                    lastSyncedText={syncState.lastSyncTimestamp ? `Synced ${new Date(syncState.lastSyncTimestamp).toLocaleTimeString()}` : 'Synced'}
+                    onOpenSyncActivity={() => setShowSyncActivityModal(true)}
                 />
 
                 {/* View Content based on activeTab */}
@@ -873,14 +1071,29 @@ const App: React.FC = () => {
                     )}
 
                     {activeTab === 'Settings' && (
-                        <div style={{ padding: '20px 24px' }}>
-                            <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '16px' }}>⚙️ Settings</h2>
-                            <button
-                                className="topbar-yellow-upload-btn"
-                                onClick={() => setShowSettingsModal(true)}
-                            >
-                                Configure Telegram Bot & Storage
-                            </button>
+                        <div style={{ padding: '0 0 24px 0' }}>
+                            <SyncSettingsView
+                                preferences={syncPreferences}
+                                syncState={syncState}
+                                onUpdatePreferences={(updates) => {
+                                    const next = { ...syncPreferences, ...updates };
+                                    setSyncPreferences(next);
+                                    saveSyncPreferences(next);
+                                    addToast('Preferences saved', 'success');
+                                }}
+                                onManualSync={triggerSync}
+                                onRebuildSearchIndex={handleRebuildSearchIndex}
+                                onClearLocalCache={handleClearLocalCache}
+                                isSyncing={isSyncing}
+                            />
+                            <div style={{ padding: '0 28px' }}>
+                                <button
+                                    className="settings-action-btn"
+                                    onClick={() => setShowSettingsModal(true)}
+                                >
+                                    Configure Telegram Bot API Credentials
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -933,6 +1146,30 @@ const App: React.FC = () => {
             {/* --------------------------------------------------------------- */}
             {/* Interactive Modals                                              */}
             {/* --------------------------------------------------------------- */}
+
+            {/* Sync Activity Modal */}
+            <SyncActivityModal
+                isOpen={showSyncActivityModal}
+                onClose={() => setShowSyncActivityModal(false)}
+                syncState={syncState}
+                preferences={syncPreferences}
+                pendingOperations={pendingOperations}
+                onSyncNow={triggerSync}
+                onRetryFailed={() => {
+                    retryFailedOperations();
+                    setPendingOperations(getStoredSyncQueue());
+                    triggerSync();
+                }}
+                isSyncing={isSyncing}
+            />
+
+            {/* Onboarding Library Restoration Overlay */}
+            <OnboardingSyncOverlay
+                isOpen={isOnboardingSync}
+                syncedCount={onboardingSyncedCount}
+                totalCount={onboardingTotalCount}
+                onContinueInBackground={() => setIsOnboardingSync(false)}
+            />
 
             {/* Upload Manager Modal */}
             <UploadManagerModal

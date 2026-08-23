@@ -1,0 +1,44 @@
+.sync-status-indicator-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+}
+
+.sync-status-indicator-btn:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 201, 40, 0.3);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+
+.sync-spin-icon {
+    animation: syncSpin 1.2s linear infinite;
+}
+
+@keyframes syncSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.status-failed {
+    color: #FF5C6C !important;
+}
+
+.sync-status-indicator-btn.status-failed {
+    border-color: rgba(255, 92, 108, 0.3);
+    background: rgba(255, 92, 108, 0.08);
+}

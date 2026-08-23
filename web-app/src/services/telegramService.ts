@@ -96,3 +96,125 @@ export const getBotInfo = async (token: string): Promise<{ username: string; fir
     }
     throw new Error('Failed to fetch bot info');
 };
+
+/**
+ * Manifest Sync Primitives
+ */
+const MANIFEST_CAPTION_PREFIX = '#TELEGPHOTO_SYNC_MANIFEST';
+
+export interface TelegramManifestUploadResult {
+    fileId: string;
+    messageId: number;
+    revision: number;
+}
+
+export interface TelegramManifestDownloadResult {
+    blob: Blob;
+    metadata: any;
+    revision: number;
+    messageId: number;
+}
+
+export const uploadSyncManifest = async (
+    config: TelegramConfig,
+    encryptedBlob: Blob,
+    metadata: any,
+    revision: number
+): Promise<TelegramManifestUploadResult> => {
+    const { token, chatId } = config;
+    if (!token || !chatId) throw new Error('Telegram config not set');
+
+    const manifestFile = new File([encryptedBlob], `manifest_rev_${revision}.dat`, {
+        type: 'application/octet-stream'
+    });
+
+    const captionData = JSON.stringify({
+        tag: MANIFEST_CAPTION_PREFIX,
+        rev: revision,
+        meta: metadata,
+        ts: new Date().toISOString()
+    });
+
+    const formData = new FormData();
+    formData.append('chat_id', chatId);
+    formData.append('document', manifestFile);
+    formData.append('caption', captionData);
+
+    const response = await axios.post(`${TELEGRAM_API_BASE}${token}/sendDocument`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
+
+    const fileId = response.data?.result?.document?.file_id;
+    const messageId = response.data?.result?.message_id;
+
+    if (!fileId || !messageId) {
+        throw new Error('Telegram manifest upload failed: no fileId or messageId returned.');
+    }
+
+    // Save manifest tracking locally
+    localStorage.setItem('telegphoto_remote_manifest_ref', JSON.stringify({
+        fileId,
+        messageId,
+        revision,
+        metadata
+    }));
+
+    return { fileId, messageId, revision };
+};
+
+export const downloadLatestSyncManifest = async (
+    config: TelegramConfig
+): Promise<TelegramManifestDownloadResult | null> => {
+    const { token } = config;
+    if (!token) throw new Error('Telegram config not set');
+
+    // Retrieve cached reference or query
+    const refData = localStorage.getItem('telegphoto_remote_manifest_ref');
+    if (!refData) return null;
+
+    try {
+        const { fileId, messageId, revision, metadata } = JSON.parse(refData);
+        const downloadUrl = await getFileDownloadUrl(config, fileId);
+        const response = await axios.get(downloadUrl, { responseType: 'blob' });
+
+        return {
+            blob: response.data,
+            metadata,
+            revision,
+            messageId
+        };
+    } catch (err) {
+        console.warn('Failed to download latest sync manifest from Telegram:', err);
+        return null;
+    }
+};
+
+export const getManifestRevision = async (
+    _config: TelegramConfig
+): Promise<number | null> => {
+    const refData = localStorage.getItem('telegphoto_remote_manifest_ref');
+    if (!refData) return null;
+    try {
+        const parsed = JSON.parse(refData);
+        return parsed.revision ?? null;
+    } catch {
+        return null;
+    }
+};
+
+export const updateSyncManifest = async (
+    config: TelegramConfig,
+    encryptedBlob: Blob,
+    metadata: any,
+    revision: number,
+    oldMessageId?: number
+): Promise<TelegramManifestUploadResult> => {
+    const uploadRes = await uploadSyncManifest(config, encryptedBlob, metadata, revision);
+
+    // Clean up older manifest message asynchronously to prevent storage clutter
+    if (oldMessageId) {
+        deleteTelegramMessage(config, oldMessageId).catch(() => {});
+    }
+
+    return uploadRes;
+};

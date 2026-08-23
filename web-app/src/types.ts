@@ -41,6 +41,13 @@ export interface ExifData {
     dateTaken?: string;
 }
 
+export interface EncryptionMetadata {
+    v: number;
+    alg: 'AES-256-GCM';
+    iv: string;
+    salt?: string;
+}
+
 export interface PhotoAsset {
     id: string;
     url: string;
@@ -56,12 +63,7 @@ export interface PhotoAsset {
     exif?: ExifData;
     pHash?: string;
     isEncrypted?: boolean;
-    encryptionMetadata?: {
-        v: number;
-        alg: 'AES-256-GCM';
-        iv: string;
-        salt?: string;
-    };
+    encryptionMetadata?: EncryptionMetadata;
     location?: {
         name: string;
         lat?: number;
