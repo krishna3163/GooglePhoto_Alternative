@@ -47,11 +47,17 @@ interface SidebarProps {
 }
 
 const TeleGphotoLogoIcon = () => (
-    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16 4C19.3137 4 22 6.68629 22 10C22 13.3137 19.3137 16 16 16C12.6863 16 10 13.3137 10 10C10 6.68629 12.6863 4 16 4Z" fill="#FF5C6C" />
-        <path d="M28 16C28 19.3137 25.3137 22 22 22C18.6863 22 16 19.3137 16 16C16 12.6863 18.6863 10 22 10C25.3137 10 28 12.6863 28 16Z" fill="#FFC928" />
-        <path d="M16 28C12.6863 28 10 25.3137 10 22C10 18.6863 12.6863 16 16 16C19.3137 16 22 18.6863 22 22C22 25.3137 19.3137 28 16 28Z" fill="#3DDC97" />
-        <path d="M4 16C4 12.6863 6.68629 10 10 10C13.3137 10 16 12.6863 16 16C16 19.3137 13.3137 22 10 22C6.68629 22 4 19.3137 4 16Z" fill="#38BDF8" />
+    <svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Outer lens ring */}
+        <circle cx="16" cy="16" r="14" stroke="#FFC928" strokeWidth="2" fill="none" opacity="0.9" />
+        {/* Inner lens circle */}
+        <circle cx="16" cy="16" r="9" stroke="#FFC928" strokeWidth="1.5" fill="rgba(255,201,40,0.08)" />
+        {/* Lens center dot */}
+        <circle cx="16" cy="16" r="4" fill="#FFC928" />
+        {/* Lens flare highlight */}
+        <circle cx="12" cy="12" r="2" fill="#FFC928" opacity="0.4" />
+        {/* Camera body top */}
+        <rect x="10" y="3" width="12" height="4" rx="2" fill="#FFC928" opacity="0.7" />
     </svg>
 );
 
