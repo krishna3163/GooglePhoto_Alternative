@@ -315,7 +315,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <span className="footer-card-title">Storage</span>
                         </div>
                         <div className="storage-usage-text">
-                            {usedStorageGB > 1000 ? `${(usedStorageGB / 1024).toFixed(2)} TB` : `${usedStorageGB.toFixed(1)} GB`} / {totalStorageGB >= 1000 ? `${(totalStorageGB / 1024).toFixed(0)} TB` : `${totalStorageGB} GB`} ({storagePercent}%)
+                            {usedStorageGB > 1000 ? `${(usedStorageGB / 1024).toFixed(2)} TB` : `${usedStorageGB.toFixed(1)} GB`} / Unlimited
                         </div>
                         <div className="storage-progress-bar">
                             <div
