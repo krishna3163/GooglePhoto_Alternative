@@ -816,6 +816,7 @@ const App: React.FC = () => {
                         localStorage.setItem('telegram_config', JSON.stringify(newCfg));
                         setCredentialsCookie(true);
                         setConfig(newCfg);
+                        setPhotos(parsePhotos());
                         addToast('Connected to Telegram Vault', 'success');
                     }}
                 />

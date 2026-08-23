@@ -3,6 +3,7 @@ import { Shield, Key, Send, HelpCircle, ChevronDown, ChevronUp, Sparkles, ArrowR
 import { getBotInfo } from '../../services/telegramService';
 import type { TelegramConfig } from '../../types';
 import './AuthWelcomeView.css';
+import { DEMO_PHOTOS } from '../../utils/demoData';
 
 interface AuthWelcomeViewProps {
     onLogin: (config: TelegramConfig) => void;
@@ -72,6 +73,7 @@ export const AuthWelcomeView: React.FC<AuthWelcomeViewProps> = ({ onLogin }) => 
             storageModel: 'model1',
         };
         localStorage.setItem('user_name', 'Demo User');
+        localStorage.setItem('uploaded_photos', JSON.stringify(DEMO_PHOTOS));
         onLogin(demoConfig);
     };
 

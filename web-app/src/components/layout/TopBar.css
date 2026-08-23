@@ -5,8 +5,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 24px;
-    gap: 20px;
+    padding: 0 18px;
+    gap: 12px;
     z-index: 90;
     flex-shrink: 0;
 }
@@ -27,6 +27,7 @@
 .topbar-search-wrapper {
     flex: 1;
     max-width: 720px;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -34,6 +35,7 @@
 
 .search-input-box {
     flex: 1;
+    min-width: 0;
     background: #0D1219;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--radius-full);
@@ -230,7 +232,8 @@
 .topbar-right-tools {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 4px;
+    flex-shrink: 0;
 }
 
 .topbar-tool-icon-btn {
@@ -475,5 +478,43 @@
     }
     .search-shortcut-badge {
         display: none;
+    }
+}
+
+@media (max-width: 1120px) and (min-width: 901px) {
+    .sync-status-indicator-btn {
+        width: 42px;
+        justify-content: center;
+        padding-inline: 0;
+    }
+
+    .sync-label {
+        display: none;
+    }
+}
+
+@media (max-width: 520px) {
+    .tg-topbar {
+        padding-inline: 12px;
+        gap: 8px;
+    }
+
+    .topbar-search-wrapper {
+        gap: 6px;
+    }
+
+    .topbar-yellow-upload-btn {
+        width: 42px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .topbar-yellow-upload-btn span {
+        display: none;
+    }
+
+    .topbar-tool-icon-btn {
+        width: 34px;
+        height: 34px;
     }
 }
