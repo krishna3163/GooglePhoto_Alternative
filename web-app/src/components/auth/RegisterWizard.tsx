@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Lock, User, Mail, Send, CheckCircle, Copy, ArrowRight, Key, Sparkles, AlertTriangle } from 'lucide-react';
 import { authApi } from '../../api/authApi';
 
+import { setCredentialsCookie } from '../../utils/storage';
 import { telegramApi } from '../../api/telegramApi';
 import { initializeVault } from '../../services/cryptoService';
 import './RegisterWizard.css';
@@ -103,6 +104,10 @@ export const RegisterWizard: React.FC<RegisterWizardProps> = ({ onSuccess, onSwi
         botToken: botToken.trim(),
         chatId: chatId.trim(),
       });
+
+      // Save into local storage for immediate frontend photo uploads
+      localStorage.setItem('telegram_config', JSON.stringify({ token: botToken.trim(), chatId: chatId.trim() }));
+      setCredentialsCookie(true);
 
       setStep(3);
     } catch (err: any) {
