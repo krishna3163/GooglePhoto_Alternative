@@ -11,6 +11,8 @@ import {
     ChevronDown,
     MessageSquare,
     Send,
+    Trash2,
+    Sparkles,
     X
 } from 'lucide-react';
 import './Sidebar.css';
@@ -30,6 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isDeveloperM
     };
     const menuItems = [
         { icon: <Image size={20} />, label: 'Photos' },
+        { icon: <Sparkles size={20} />, label: 'Memories' },
         { icon: <Clock size={20} />, label: 'Recently added' },
         { icon: <MessageSquare size={20} />, label: 'Messages' },
         ...(isDeveloperMode ? [{ icon: <Send size={20} />, label: 'Telegram' }] : []),
@@ -40,6 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isDeveloperM
         { icon: <FileText size={20} />, label: 'Documents' },
         { icon: <MonitorPlay size={20} />, label: 'Screenshots and recordings' },
         { icon: <Star size={20} />, label: 'Favourites' },
+        { icon: <Trash2 size={20} />, label: 'Trash' },
     ];
 
     const moreItems = [

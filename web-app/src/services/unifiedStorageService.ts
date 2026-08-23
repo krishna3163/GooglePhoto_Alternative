@@ -1,4 +1,4 @@
-import type { TelegramConfig, PhotoAsset } from '../types';
+import type { TelegramConfig } from '../types';
 import {
     uploadFileToTelegram as uploadToModel1,
     getFileDownloadUrl as getModel1FileUrl,

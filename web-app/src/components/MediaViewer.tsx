@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Trash2, Download, Edit2, Check, FileText, Star, ExternalLink } from 'lucide-react';
+import { X, Trash2, Download, Edit2, Check, FileText, Star, ExternalLink, Info, RotateCcw, Camera, HardDrive, Calendar } from 'lucide-react';
 import type { PhotoAsset } from '../types';
 import './MediaViewer.css';
 
@@ -7,12 +7,14 @@ interface MediaViewerProps {
     photo: PhotoAsset;
     onClose: () => void;
     onDelete: (id: string) => void;
+    onRestore?: (id: string) => void;
     onUpdate: (photo: PhotoAsset) => void;
 }
 
-const MediaViewer: React.FC<MediaViewerProps> = ({ photo, onClose, onDelete, onUpdate }) => {
+const MediaViewer: React.FC<MediaViewerProps> = ({ photo, onClose, onDelete, onRestore, onUpdate }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedName, setEditedName] = useState(photo.fileName);
+    const [showInfo, setShowInfo] = useState(false);
 
     const handleSaveName = () => {
         onUpdate({ ...photo, fileName: editedName });
@@ -82,7 +84,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ photo, onClose, onDelete, onU
         <div className="viewer-overlay">
             <div className="viewer-header">
                 <div className="viewer-left">
-                    <button className="viewer-icon-btn" onClick={onClose}>
+                    <button className="viewer-icon-btn" onClick={onClose} title="Close">
                         <X size={24} />
                     </button>
                     <div className="viewer-title-area">
@@ -101,7 +103,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ photo, onClose, onDelete, onU
                         ) : (
                             <div className="display-name-row">
                                 <span className="viewer-filename">{photo.fileName}</span>
-                                <button className="edit-icon-btn" onClick={() => setIsEditing(true)}>
+                                <button className="edit-icon-btn" onClick={() => setIsEditing(true)} title="Rename">
                                     <Edit2 size={16} />
                                 </button>
                             </div>
@@ -113,31 +115,65 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ photo, onClose, onDelete, onU
                 </div>
 
                 <div className="viewer-right">
-                    <button
-                        className={`viewer-icon-btn ${photo.isFavourite ? 'active-fav' : ''}`}
-                        title="Mark as Favourite"
-                        onClick={toggleFavourite}
-                    >
-                        <Star size={22} fill={photo.isFavourite ? "#8ab4f8" : "none"} stroke={photo.isFavourite ? "#8ab4f8" : "currentColor"} />
-                    </button>
-                    <button
-                        className="viewer-icon-btn"
-                        title="Download"
-                        onClick={() => window.open(photo.url, '_blank')}
-                    >
-                        <Download size={22} />
-                    </button>
-                    <button
-                        className="viewer-icon-btn delete-btn"
-                        title="Delete"
-                        onClick={() => {
-                            if (window.confirm('Are you sure you want to delete this item? It will be removed from your cloud gallery.')) {
-                                onDelete(photo.id);
-                            }
-                        }}
-                    >
-                        <Trash2 size={22} />
-                    </button>
+                    {photo.isTrash ? (
+                        <>
+                            {onRestore && (
+                                <button
+                                    className="viewer-icon-btn restore-btn"
+                                    title="Restore from Trash"
+                                    onClick={() => onRestore(photo.id)}
+                                >
+                                    <RotateCcw size={22} />
+                                </button>
+                            )}
+                            <button
+                                className="viewer-icon-btn delete-btn"
+                                title="Delete Permanently"
+                                onClick={() => {
+                                    if (window.confirm('Delete permanently from your Telegram vault? This cannot be undone.')) {
+                                        onDelete(photo.id);
+                                    }
+                                }}
+                            >
+                                <Trash2 size={22} />
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                className={`viewer-icon-btn ${photo.isFavourite ? 'active-fav' : ''}`}
+                                title={photo.isFavourite ? "Remove Favourite" : "Mark as Favourite"}
+                                onClick={toggleFavourite}
+                            >
+                                <Star size={22} fill={photo.isFavourite ? "#8ab4f8" : "none"} stroke={photo.isFavourite ? "#8ab4f8" : "currentColor"} />
+                            </button>
+                            <button
+                                className={`viewer-icon-btn ${showInfo ? 'active-info' : ''}`}
+                                title="Photo Info & Details"
+                                onClick={() => setShowInfo(prev => !prev)}
+                            >
+                                <Info size={22} />
+                            </button>
+                            <button
+                                className="viewer-icon-btn"
+                                title="Download File"
+                                onClick={() => window.open(photo.url, '_blank')}
+                            >
+                                <Download size={22} />
+                            </button>
+                            <button
+                                className="viewer-icon-btn delete-btn"
+                                title="Move to Trash"
+                                onClick={() => {
+                                    if (window.confirm('Move this item to Trash?')) {
+                                        onDelete(photo.id);
+                                    }
+                                }}
+                            >
+                                <Trash2 size={22} />
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -145,7 +181,60 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ photo, onClose, onDelete, onU
                 {renderContent()}
             </div>
 
-            {(photo.ocrText || photo.location) && !isPdf && (
+            {/* Info & EXIF Metadata Slide-out Panel */}
+            {showInfo && (
+                <div className="viewer-info-panel">
+                    <div className="info-panel-header">
+                        <h3><Info size={18} /> Details</h3>
+                        <button className="info-close-btn" onClick={() => setShowInfo(false)}><X size={18} /></button>
+                    </div>
+                    <div className="info-panel-body">
+                        <div className="info-item">
+                            <Calendar size={18} />
+                            <div>
+                                <b>Date & Time</b>
+                                <p>{new Date(photo.timestamp).toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div className="info-item">
+                            <HardDrive size={18} />
+                            <div>
+                                <b>File Name & Type</b>
+                                <p>{photo.fileName} ({photo.mediaType.toUpperCase()})</p>
+                            </div>
+                        </div>
+                        {photo.exif?.cameraModel && (
+                            <div className="info-item">
+                                <Camera size={18} />
+                                <div>
+                                    <b>Camera Model</b>
+                                    <p>{photo.exif.cameraModel}</p>
+                                </div>
+                            </div>
+                        )}
+                        {photo.location && (
+                            <div className="info-item">
+                                <span>📍</span>
+                                <div>
+                                    <b>Location</b>
+                                    <p>{photo.location.name}</p>
+                                </div>
+                            </div>
+                        )}
+                        {photo.ocrText && (
+                            <div className="info-item">
+                                <span>🔍</span>
+                                <div>
+                                    <b>Extracted Text (OCR)</b>
+                                    <p className="ocr-snippet">{photo.ocrText}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {(photo.ocrText || photo.location) && !isPdf && !showInfo && (
                 <div className="viewer-ocr-panel" style={{ bottom: '20px' }}>
                     {photo.ocrText && (
                         <>

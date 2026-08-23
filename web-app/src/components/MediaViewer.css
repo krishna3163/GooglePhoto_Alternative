@@ -305,3 +305,107 @@
     line-height: 1.6;
     color: #e3e3e3;
 }
+
+.viewer-info-panel {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 320px;
+    background: rgba(20, 21, 25, 0.95);
+    backdrop-filter: blur(16px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+    color: #f1f5f9;
+    z-index: 3020;
+    overflow: hidden;
+    animation: slideInOCR 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.info-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.info-panel-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-blue, #8ab4f8);
+}
+
+.info-close-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.info-panel-body {
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.info-item b {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 2px;
+}
+
+.info-item p {
+    font-size: 13px;
+    margin: 0;
+    color: #e2e8f0;
+    word-break: break-word;
+}
+
+.ocr-snippet {
+    font-style: italic;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px 10px;
+    border-radius: 8px;
+    margin-top: 4px !important;
+}
+
+.viewer-icon-btn.active-info {
+    background-color: rgba(138, 180, 248, 0.2);
+    color: var(--accent-blue, #8ab4f8);
+}
+
+.viewer-icon-btn.restore-btn {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.viewer-icon-btn.restore-btn:hover {
+    background-color: rgba(16, 185, 129, 0.35);
+}

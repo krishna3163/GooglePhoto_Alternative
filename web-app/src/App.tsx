@@ -181,14 +181,34 @@ const App: React.FC = () => {
     });
   };
 
-  const handleDeletePhoto = async (photoId: string) => {
+  const handleDeletePhoto = async (photoId: string, permanent: boolean = false) => {
     const photoToDelete = photos.find(p => p.id === photoId);
-    if (photoToDelete?.messageId && config) {
-      await deleteTelegramMessage(config, photoToDelete.messageId);
-    }
+    if (!photoToDelete) return;
 
+    if (permanent || photoToDelete.isTrash) {
+      // Permanent delete from Telegram and local state
+      if (photoToDelete.messageId && config) {
+        await deleteTelegramMessage(config, photoToDelete.messageId);
+      }
+      setPhotos(prev => {
+        const updated = prev.filter(p => p.id !== photoId);
+        localStorage.setItem('uploaded_photos', JSON.stringify(updated));
+        return updated;
+      });
+    } else {
+      // Soft delete: move to trash
+      setPhotos(prev => {
+        const updated = prev.map(p => p.id === photoId ? { ...p, isTrash: true, deletedAt: new Date().toISOString() } : p);
+        localStorage.setItem('uploaded_photos', JSON.stringify(updated));
+        return updated;
+      });
+    }
+    setSelectedPhoto(null);
+  };
+
+  const handleRestorePhoto = (photoId: string) => {
     setPhotos(prev => {
-      const updated = prev.filter(p => p.id !== photoId);
+      const updated = prev.map(p => p.id === photoId ? { ...p, isTrash: false, deletedAt: undefined } : p);
       localStorage.setItem('uploaded_photos', JSON.stringify(updated));
       return updated;
     });
@@ -212,27 +232,41 @@ const App: React.FC = () => {
   };
 
   const getFilteredPhotos = () => {
-    let basePhotos = photos;
+    if (activeTab === 'Trash') {
+      return photos.filter(p => p.isTrash);
+    }
+
+    // For all other tabs, exclude items in trash
+    const activePhotos = photos.filter(p => !p.isTrash);
+
     if (activeTab === 'Videos') {
-      basePhotos = photos.filter(p => p.mediaType === 'video');
+      return activePhotos.filter(p => p.mediaType === 'video');
     } else if (activeTab === 'Documents') {
-      basePhotos = photos.filter(p => p.mediaType === 'document');
+      return activePhotos.filter(p => p.mediaType === 'document');
     } else if (activeTab === 'Favourites') {
-      basePhotos = photos.filter(p => p.isFavourite);
+      return activePhotos.filter(p => p.isFavourite);
+    } else if (activeTab === 'Memories') {
+      // Show photos from same month/day or recently captured
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      return activePhotos.filter(p => {
+        const d = new Date(p.timestamp);
+        return d.getMonth() === currentMonth;
+      });
     } else if (activeTab === 'Screenshots and recordings') {
-      basePhotos = photos.filter(p =>
+      return activePhotos.filter(p =>
         p.fileName.toLowerCase().includes('screenshot') ||
         p.fileName.toLowerCase().includes('screen_recording') ||
         p.fileName.toLowerCase().includes('scr_')
       );
     } else if (activeTab === 'Recently added') {
-      return photos;
+      return activePhotos;
     } else if (activeTab === 'Places') {
-      basePhotos = photos.filter(p => p.location);
+      return activePhotos.filter(p => p.location);
     } else if (activeTab === 'People') {
-      basePhotos = photos.filter(p => p.faces && p.faces.length > 0);
+      return activePhotos.filter(p => p.faces && p.faces.length > 0);
     }
-    return basePhotos;
+    return activePhotos;
   };
 
   const handleDeveloperModeToggle = (enabled: boolean) => {
@@ -312,6 +346,7 @@ const App: React.FC = () => {
               photo={selectedPhoto}
               onClose={() => setSelectedPhoto(null)}
               onDelete={handleDeletePhoto}
+              onRestore={handleRestorePhoto}
               onUpdate={handleUpdatePhoto}
             />
           )}

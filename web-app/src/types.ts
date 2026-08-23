@@ -13,7 +13,7 @@ export interface TelegramSession {
     userId: number;
     phoneNumber: string;
     accessHash?: string;
-    encryptedSession: string; // Encrypted session data
+    encryptedSession: string;
     createdAt: number;
     isActive: boolean;
 }
@@ -23,8 +23,22 @@ export interface TelegramConfig {
     chatId: string;
     isDeveloperMode?: boolean;
     telegramUser?: TelegramUser | null;
-    storageModel?: 'model1' | 'model3'; // 'model1' = Bot-based (default), 'model3' = Account-based
-    model3Session?: TelegramSession | null; // For MTProto account login
+    storageModel?: 'model1' | 'model3';
+    model3Session?: TelegramSession | null;
+    encryptionKey?: string;
+    vaults?: { id: string; name: string; chatId: string; type: 'photos' | 'videos' | 'documents' | 'family' }[];
+}
+
+export interface ExifData {
+    cameraModel?: string;
+    lens?: string;
+    iso?: number | string;
+    fNumber?: number | string;
+    exposureTime?: string;
+    dimensions?: { width: number; height: number };
+    fileSizeBytes?: number;
+    gps?: { lat: number; lng: number };
+    dateTaken?: string;
 }
 
 export interface PhotoAsset {
@@ -33,16 +47,31 @@ export interface PhotoAsset {
     mediaType: 'image' | 'video' | 'document';
     fileName: string;
     timestamp: string;
+    fileSizeBytes?: number;
     ocrText?: string;
     isFavourite?: boolean;
+    isTrash?: boolean;
+    deletedAt?: string;
+    albumIds?: string[];
+    exif?: ExifData;
+    pHash?: string;
+    isEncrypted?: boolean;
     location?: {
         name: string;
         lat?: number;
         lng?: number;
     };
-    faces?: string[]; // Face IDs or names
+    faces?: string[];
     messageId?: number;
     fileId?: string;
+}
+
+export interface Album {
+    id: string;
+    name: string;
+    coverPhotoUrl?: string;
+    createdAt: string;
+    photoIds: string[];
 }
 
 export interface UploadItem {
@@ -50,6 +79,7 @@ export interface UploadItem {
     file: File;
     status: 'pending' | 'uploading' | 'success' | 'failed';
     progress: number;
+    speedMbPerSec?: number;
     retries: number;
     error?: string;
     fileId?: string | null;

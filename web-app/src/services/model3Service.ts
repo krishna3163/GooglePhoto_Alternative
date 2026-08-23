@@ -8,7 +8,7 @@ interface PhoneCodeResponse {
     phoneNumber: string;
 }
 
-interface SessionData {
+export interface SessionData {
     sessionId: string;
     userId: number;
     phoneNumber: string;
