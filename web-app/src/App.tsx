@@ -1065,7 +1065,10 @@ const App: React.FC = () => {
                 />
 
                 {/* Legacy Local Library Upgrade Banner */}
-                <MigrationBanner onMigrationComplete={() => addToast('Library upgraded to Cloud Sync!', 'success')} />
+                <MigrationBanner onMigrationComplete={() => {
+                    triggerSync();
+                    addToast('Library upgraded to Cloud Sync!', 'success');
+                }} />
 
                 {/* View Content based on activeTab */}
                 <div className="tg-view-scroll-container">
