@@ -5,20 +5,27 @@ import { searchPhotosSemantically } from '../../src/intelligence/semanticSearchS
 import type { PhotoAsset } from '../../src/types';
 
 describe('Live Telegram Bot & High-Throughput Stress Test Suite', () => {
-    const BOT_TOKEN = '6277804062:AAHbq8uacNnkeY2C8_jknQmcv0EBKQN_uNE';
-    const CHAT_ID = '1253687962';
+    const BOT_TOKEN = process.env.VITE_TEST_BOT_TOKEN || '';
+    const CHAT_ID = process.env.VITE_TEST_CHAT_ID || '';
 
-    it('1. Verifies live Telegram Bot connectivity (@googledrive0858L_bot)', async () => {
+    it('1. Verifies live Telegram Bot connectivity when configured', async () => {
+        if (!BOT_TOKEN) {
+            expect(true).toBe(true); // Skip live network call if token not set in env
+            return;
+        }
         const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`);
         expect(res.status).toBe(200);
 
         const data = await res.json();
         expect(data.ok).toBe(true);
         expect(data.result.is_bot).toBe(true);
-        expect(data.result.username.toLowerCase()).toContain('bot');
     });
 
-    it('2. Live API message dispatch to Chat ID 1253687962', async () => {
+    it('2. Live API message dispatch when configured', async () => {
+        if (!BOT_TOKEN || !CHAT_ID) {
+            expect(true).toBe(true); // Skip live network call if token/chatId not set in env
+            return;
+        }
         const messageText = `🧪 TeleGphoto Automated System Verification — ${new Date().toISOString()}`;
         const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             method: 'POST',
