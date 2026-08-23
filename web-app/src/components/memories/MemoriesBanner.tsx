@@ -55,7 +55,11 @@ export const MemoriesBanner: React.FC<MemoriesBannerProps> = ({
                                 alt={memory.title}
                                 className="memory-card-bg-image"
                                 loading="lazy"
+                                onError={(e) => {
+                                    e.currentTarget.src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84';
+                                }}
                             />
+
                             <div className="memory-card-badge-top">
                                 <div className="memory-pill-icon">
                                     <Layers size={13} />

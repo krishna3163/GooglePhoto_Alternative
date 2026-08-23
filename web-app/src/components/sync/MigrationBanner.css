@@ -1,0 +1,116 @@
+.migration-banner-bar {
+  background: #171F2B;
+  border-bottom: 1px solid rgba(255, 201, 40, 0.3);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  position: relative;
+  z-index: 100;
+}
+
+.migration-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.migration-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 201, 40, 0.12);
+  border: 1px solid rgba(255, 201, 40, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.migration-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.migration-text-group h4 {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.migration-text-group p {
+  margin: 0;
+  font-size: 12px;
+  color: #A7AFBC;
+  line-height: 1.4;
+}
+
+.migration-result-msg {
+  font-size: 12px;
+  font-weight: 600;
+  color: #3DDC97;
+  margin-top: 4px;
+}
+
+.migration-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.migration-upgrade-btn {
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: #FFC928;
+  color: #080B10;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(255, 201, 40, 0.2);
+}
+
+.migration-upgrade-btn:hover:not(:disabled) {
+  background: #FFD452;
+  transform: translateY(-1px);
+}
+
+.migration-upgrade-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.migration-dismiss-btn {
+  background: none;
+  border: none;
+  color: #A7AFBC;
+  padding: 6px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.migration-dismiss-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+}
+
+@media (max-width: 768px) {
+  .migration-banner-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 14px;
+  }
+  .migration-banner-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

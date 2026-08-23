@@ -1,0 +1,331 @@
+.register-wizard-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: radial-gradient(circle at top center, #171F2B 0%, #080B10 100%);
+  position: relative;
+  overflow-y: auto;
+}
+
+.register-wizard-card {
+  width: 100%;
+  max-width: 480px;
+  background: rgba(13, 18, 25, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 28px;
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85);
+  position: relative;
+  z-index: 2;
+  margin: auto;
+}
+
+.wizard-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #171F2B;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  color: #717D96;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.step-dot.active {
+  background: #FFC928;
+  border-color: #FFC928;
+  color: #080B10;
+  box-shadow: 0 0 16px rgba(255, 201, 40, 0.4);
+}
+
+.step-line {
+  width: 48px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 6px;
+  transition: all 0.3s ease;
+}
+
+.step-line.active {
+  background: #FFC928;
+}
+
+.wizard-title-group {
+  margin-bottom: 20px;
+}
+
+.wizard-title-group h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.3px;
+}
+
+.wizard-title-group p {
+  font-size: 13px;
+  color: #A7AFBC;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.wizard-step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(255, 201, 40, 0.1);
+  border: 1px solid rgba(255, 201, 40, 0.25);
+  color: #FFC928;
+  font-size: 11.5px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.wizard-step-badge.success {
+  background: rgba(61, 220, 151, 0.1);
+  border-color: rgba(61, 220, 151, 0.25);
+  color: #3DDC97;
+}
+
+.wizard-error-banner {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 92, 108, 0.12);
+  border: 1px solid rgba(255, 92, 108, 0.3);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #FF5C6C;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 18px;
+}
+
+.wizard-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wizard-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wizard-input-group label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #E2E8F0;
+}
+
+.wizard-field-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #080B10;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 0 16px;
+  height: 46px;
+  transition: all 0.2s ease;
+}
+
+.wizard-field-box:focus-within {
+  border-color: #FFC928;
+  box-shadow: 0 0 0 1px #FFC928, 0 0 16px rgba(255, 201, 40, 0.2);
+  background: #0D1219;
+}
+
+.wizard-field-box .field-icon {
+  color: #717D96;
+  flex-shrink: 0;
+}
+
+.wizard-field-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #FFFFFF;
+  font-size: 13.5px;
+  font-weight: 500;
+  outline: none;
+}
+
+.wizard-field-box input::placeholder {
+  color: #4A5568;
+}
+
+.wizard-action-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.wizard-secondary-btn {
+  height: 46px;
+  padding: 0 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #E2E8F0;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wizard-secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.wizard-submit-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 16px;
+  background: #FFC928;
+  color: #080B10;
+  font-size: 14.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 24px rgba(255, 201, 40, 0.25);
+  margin-top: 6px;
+}
+
+.wizard-submit-btn.flex-1 {
+  flex: 1;
+  margin-top: 0;
+}
+
+.wizard-submit-btn:hover:not(:disabled) {
+  background: #FFD452;
+  transform: translateY(-1px);
+}
+
+.wizard-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wizard-footer-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 13px;
+  color: #A7AFBC;
+}
+
+.wizard-login-link {
+  background: none;
+  border: none;
+  color: #FFC928;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-size: 13px;
+}
+
+.wizard-login-link:hover {
+  text-decoration: underline;
+}
+
+/* Recovery Key Step */
+.recovery-key-card {
+  background: #080B10;
+  border: 1px solid rgba(255, 201, 40, 0.25);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.recovery-key-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #FFC928;
+}
+
+.recovery-key-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12.5px;
+  color: #FFFFFF;
+  background: #121923;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  word-break: break-all;
+  line-height: 1.6;
+  user-select: all;
+}
+
+.copy-key-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255, 201, 40, 0.1);
+  border: 1px solid rgba(255, 201, 40, 0.25);
+  color: #FFC928;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-key-btn:hover {
+  background: rgba(255, 201, 40, 0.2);
+}
+
+.recovery-ack-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12.5px;
+  color: #E2E8F0;
+  line-height: 1.4;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.recovery-ack-checkbox input {
+  margin-top: 3px;
+  cursor: pointer;
+  accent-color: #FFC928;
+}

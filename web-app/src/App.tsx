@@ -36,7 +36,15 @@ import {
 import SyncActivityModal from './components/sync/SyncActivityModal';
 import OnboardingSyncOverlay from './components/sync/OnboardingSyncOverlay';
 import SyncSettingsView from './components/views/SyncSettingsView';
-import AuthWelcomeView from './components/auth/AuthWelcomeView';
+import LoginView from './components/auth/LoginView';
+import RegisterWizard from './components/auth/RegisterWizard';
+import ConnectedDevicesModal from './components/settings/ConnectedDevicesModal';
+import MigrationBanner from './components/sync/MigrationBanner';
+import { authApi } from './api/authApi';
+import { syncApi } from './api/syncApi';
+import { setAccessToken } from './api/apiClient';
+
+
 
 // Layout & Components
 import Sidebar, { type VaultInfo } from './components/layout/Sidebar';
@@ -97,13 +105,25 @@ const App: React.FC = () => {
     // -----------------------------------------------------------------------
     // Core App State
     // -----------------------------------------------------------------------
+    const [currentUser, setCurrentUser] = useState<{ id: string; username: string; email: string } | null>(() => {
+        try {
+            const stored = localStorage.getItem('telegphoto_user_profile');
+            return stored ? JSON.parse(stored) : null;
+        } catch {
+            return null;
+        }
+    });
+    const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+    const [showDevicesModal, setShowDevicesModal] = useState(false);
+
     const [config, setConfig] = useState<TelegramConfig | null>(parseConfig);
     const [photos, setPhotos] = useState<PhotoAsset[]>(parsePhotos);
     const [isLocked, setIsLocked] = useState<boolean>(() => !!getStoredPinData());
     const [loading, setLoading] = useState(true);
-    const [userName] = useState(() => getStoredUserName() || 'Krishna');
-    const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-    const userIdentity = useMemo(() => deriveUserIdentity(config?.chatId || 'guest', userName), [config?.chatId, userName]);
+    const [userName] = useState(() => currentUser?.username || getStoredUserName() || 'Krishna');
+    const userIdentity = useMemo(() => deriveUserIdentity(config?.chatId || currentUser?.id || 'guest', userName), [config?.chatId, currentUser?.id, userName]);
+
+
 
     // Master Vault Key in memory
     const [masterVaultKey, setMasterVaultKey] = useState<CryptoKey | null>(null);
@@ -793,9 +813,61 @@ const App: React.FC = () => {
         addToast('Local decrypted cache cleared', 'info');
     };
 
-    const handleSignOut = () => {
+    const handleAuthSuccess = async (userData: any, masterKey: CryptoKey, userVaults: any[]) => {
+        setCurrentUser(userData);
+        localStorage.setItem('telegphoto_user_profile', JSON.stringify(userData));
+        if (userData.username) {
+            localStorage.setItem('user_name', userData.username);
+        }
+        if (masterKey) {
+            setMasterVaultKey(masterKey);
+        }
+        if (userVaults && userVaults.length > 0) {
+            const mappedVaults: VaultInfo[] = userVaults.map(v => ({
+                id: v.id,
+                name: v.name,
+                chatId: '',
+                type: 'photos'
+            }));
+            setVaults(mappedVaults);
+            setActiveVaultId(mappedVaults[0].id);
+        }
+        addToast(`Welcome back, ${userData.username}!`, 'success');
+
+        // Trigger background bootstrap sync from MongoDB
+        try {
+            const bootstrapData = await syncApi.getBootstrap({ limit: 100 });
+            if (bootstrapData.media && bootstrapData.media.length > 0) {
+                const mappedPhotos: PhotoAsset[] = bootstrapData.media.map(m => ({
+                    id: m.id,
+                    url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84',
+                    mediaType: m.mediaType,
+                    fileName: m.fileName,
+                    timestamp: m.createdAt,
+                    fileSizeBytes: m.size,
+                    isFavourite: m.favorite,
+                    isTrash: m.trashed,
+                    albumIds: m.albumIds,
+                    vaultId: m.vaultId,
+                    fileId: m.telegram?.original?.fileId,
+                    messageId: m.telegram?.original?.messageId,
+                }));
+                setPhotos(mappedPhotos);
+                localStorage.setItem('uploaded_photos', JSON.stringify(mappedPhotos));
+            }
+        } catch (syncErr) {
+            console.warn('Bootstrap background sync note:', syncErr);
+        }
+    };
+
+    const handleSignOut = async () => {
+        try {
+            await authApi.logout();
+        } catch {}
         clearAllCredentialsAndStorage();
         clearActiveSession();
+        setAccessToken(null);
+        setCurrentUser(null);
         setConfig(null);
         setPhotos([]);
         setMasterVaultKey(null);
@@ -808,22 +880,25 @@ const App: React.FC = () => {
         return <SplashLoader />;
     }
 
-    if (!config) {
+    if (!currentUser && !config) {
         return (
             <>
-                <AuthWelcomeView
-                    onLogin={(newCfg) => {
-                        localStorage.setItem('telegram_config', JSON.stringify(newCfg));
-                        setCredentialsCookie(true);
-                        setConfig(newCfg);
-                        setPhotos(parsePhotos());
-                        addToast('Connected to Telegram Vault', 'success');
-                    }}
-                />
+                {authMode === 'login' ? (
+                    <LoginView
+                        onSuccess={handleAuthSuccess}
+                        onSwitchToRegister={() => setAuthMode('register')}
+                    />
+                ) : (
+                    <RegisterWizard
+                        onSuccess={handleAuthSuccess}
+                        onSwitchToLogin={() => setAuthMode('login')}
+                    />
+                )}
                 <ToastContainer toasts={toasts} onDismiss={dismissToast} />
             </>
         );
     }
+
 
     const storedPinData = getStoredPinData();
     if (isLocked && storedPinData) {
@@ -833,7 +908,8 @@ const App: React.FC = () => {
     const activeVault = vaults.find(v => v.id === activeVaultId) || vaults[0];
 
     return (
-        <div className="telegphoto-app-root" data-theme={theme}>
+        <div className="telegphoto-app-root" data-theme="dark">
+
             {/* 1. Left Sidebar */}
             <Sidebar
                 activeTab={activeTab}
@@ -862,9 +938,8 @@ const App: React.FC = () => {
                     onFiltersChange={setFilters}
                     onUploadClick={() => setShowUploadModal(true)}
                     onMobileMenuClick={() => setSidebarMobileOpen(true)}
-                    theme={theme}
-                    onThemeToggle={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
                     userName={userIdentity.displayName}
+
                     onOpenSettings={() => setShowSettingsModal(true)}
                     onOpenStorage={() => setShowStorageModal(true)}
                     onOpenSecurity={() => setShowSecurityModal(true)}
@@ -879,8 +954,12 @@ const App: React.FC = () => {
                     onOpenSyncActivity={() => setShowSyncActivityModal(true)}
                 />
 
+                {/* Legacy Local Library Upgrade Banner */}
+                <MigrationBanner onMigrationComplete={() => addToast('Library upgraded to Cloud Sync!', 'success')} />
+
                 {/* View Content based on activeTab */}
                 <div className="tg-view-scroll-container">
+
                     {activeTab === 'Photos' && (
                         <>
                             {/* Memories Banner */}
@@ -1283,7 +1362,15 @@ const App: React.FC = () => {
                 isOpen={showSecurityModal}
                 onClose={() => setShowSecurityModal(false)}
                 activeVaultName={activeVault.name}
+                onOpenDevices={() => setShowDevicesModal(true)}
             />
+
+            {/* Connected Devices Modal */}
+            <ConnectedDevicesModal
+                isOpen={showDevicesModal}
+                onClose={() => setShowDevicesModal(false)}
+            />
+
 
             {/* Fullscreen Memory Story Viewer */}
             {activeStoryMemory && (

@@ -7,7 +7,7 @@ interface StorageAnalyticsModalProps {
     isOpen: boolean;
     onClose: () => void;
     usedBytes: number;
-    totalGB: number;
+    totalGB?: number;
     photosCount: number;
     videosCount: number;
     docsCount: number;
@@ -19,17 +19,17 @@ export const StorageAnalyticsModal: React.FC<StorageAnalyticsModalProps> = ({
     isOpen,
     onClose,
     usedBytes,
-    totalGB,
     photosCount,
     videosCount,
     docsCount,
     trashCount,
     onEmptyTrash,
 }) => {
+
     if (!isOpen) return null;
 
     const usedGB = usedBytes / (1024 * 1024 * 1024);
-    const percent = Math.min(100, Math.round((usedGB / totalGB) * 100));
+
 
     return (
         <div className="analytics-modal-overlay">
@@ -55,17 +55,18 @@ export const StorageAnalyticsModal: React.FC<StorageAnalyticsModalProps> = ({
                     <div className="storage-gauge-card">
                         <div className="gauge-header">
                             <span className="gauge-used">
-                                {usedGB > 1000 ? `${(usedGB / 1024).toFixed(2)} TB` : `${usedGB.toFixed(1)} GB`}
+                                {usedGB > 1000 ? `${(usedGB / 1024).toFixed(2)} TB` : `${usedGB.toFixed(2)} GB`}
                             </span>
                             <span className="gauge-total">
-                                of {totalGB >= 1000 ? `${(totalGB / 1024).toFixed(0)} TB` : `${totalGB} GB`} ({percent}%)
+                                of ∞ Unlimited Cloud Storage
                             </span>
                         </div>
 
                         <div className="gauge-track">
-                            <div className="gauge-fill" style={{ width: `${percent}%` }} />
+                            <div className="gauge-fill" style={{ width: '100%' }} />
                         </div>
                     </div>
+
 
                     {/* Breakdown by Type */}
                     <div className="storage-breakdown-list">

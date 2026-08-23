@@ -143,7 +143,11 @@ export const MemoryStoryViewer: React.FC<MemoryStoryViewerProps> = ({
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
+                        onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84';
+                        }}
                     />
+
                 </AnimatePresence>
 
                 <button className="story-arrow-btn right" onClick={handleNext} aria-label="Next">

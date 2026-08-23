@@ -1,0 +1,166 @@
+// Prisma Schema for TeleGphoto PostgreSQL Database
+// Production-ready relational model for multi-user, cross-device encrypted media platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String       @id @default(uuid())
+  username     String       @unique
+  email        String       @unique
+  passwordHash String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  vaults       Vault[]
+  media        Media[]
+  albums       Album[]
+  sessions     Session[]
+  devices      Device[]
+  syncEvents   SyncEvent[]
+
+  @@map("users")
+}
+
+model Session {
+  id               String    @id @default(uuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String
+  deviceId         String
+  deviceName       String?
+  createdAt        DateTime  @default(now())
+  expiresAt        DateTime
+  revokedAt        DateTime?
+
+  @@index([userId, deviceId])
+  @@map("sessions")
+}
+
+model Device {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId   String
+  deviceName String
+  deviceType String?
+  lastSeenAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+
+  @@unique([userId, deviceId])
+  @@map("devices")
+}
+
+model Vault {
+  id                  String   @id @default(uuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                String
+  description         String?
+  encryptedVaultKey   String?
+  wrappedWithRecovery String?
+  salt                String?
+  keyVersion          Int      @default(1)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  media               Media[]
+  albums              Album[]
+
+  @@index([userId])
+  @@map("vaults")
+}
+
+model Media {
+  id                 String       @id @default(uuid())
+  userId             String
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vaultId            String
+  vault              Vault        @relation(fields: [vaultId], references: [id], onDelete: Cascade)
+
+  fileName           String
+  originalFileName   String?
+  mimeType           String
+  mediaType          String       @default("image")
+  fileSize           BigInt
+  width              Int?
+  height             Int?
+  duration           Float?
+
+  isFavorite         Boolean      @default(false)
+  isDeleted          Boolean      @default(false)
+  deletedAt          DateTime?
+  takenAt            DateTime?
+
+  telegramChatId     String?
+  telegramMessageId  BigInt?
+  telegramFileId     String?
+
+  encryptionVersion  Int          @default(1)
+  encryptionIv       String?
+  encryptedMetadata  String?      @db.Text
+  checksum           String?
+  perceptualHash     String?
+  syncVersion        BigInt       @default(1)
+
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  albumMedia         AlbumMedia[]
+
+  @@index([userId, vaultId, isDeleted, createdAt(sort: Desc)])
+  @@index([userId, isFavorite])
+  @@index([userId, syncVersion])
+  @@map("media")
+}
+
+model Album {
+  id           String       @id @default(uuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vaultId      String
+  vault        Vault        @relation(fields: [vaultId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  coverMediaId String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  albumMedia   AlbumMedia[]
+
+  @@index([userId, vaultId])
+  @@map("albums")
+}
+
+model AlbumMedia {
+  id       String   @id @default(uuid())
+  albumId  String
+  album    Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  mediaId  String
+  media    Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  order    Int      @default(0)
+  addedAt  DateTime @default(now())
+
+  @@unique([albumId, mediaId])
+  @@map("album_media")
+}
+
+model SyncEvent {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entityType  String   // "media" | "album" | "vault"
+  entityId    String
+  operation   String   // "CREATE" | "UPDATE" | "DELETE" | "RESTORE"
+  syncVersion BigInt
+  payload     String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  @@index([userId, syncVersion])
+  @@map("sync_events")
+}

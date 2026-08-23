@@ -67,48 +67,19 @@ div {
 
 /* ==================== TOUCH-FRIENDLY UI ==================== */
 
-/* Minimum touch target size: 44x44px */
-button,
-a,
-input[type="button"],
-input[type="submit"],
-input[type="reset"],
-input[type="checkbox"],
-input[type="radio"],
-.clickable,
-[role="button"] {
-    min-height: 44px;
-    min-width: 44px;
-    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
-    border-radius: clamp(4px, 1vw, 8px);
-}
-
 /* Touch feedback */
 button:active,
 a:active,
 .clickable:active {
-    opacity: 0.7;
-    transform: scale(0.98);
+    opacity: 0.85;
 }
 
-/* Remove input styling for better touch experience */
+/* Base input styling for better touch experience */
 input {
     font-family: inherit;
     font-size: inherit;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="tel"],
-input[type="number"],
-textarea {
-    padding: clamp(8px, 2vw, 12px);
-    min-height: 44px;
-    -webkit-appearance: none;
-    appearance: none;
-    border-radius: 8px;
-}
 
 /* ==================== RESPONSIVE PADDING & MARGINS ==================== */
 
@@ -233,21 +204,6 @@ video {
     padding: clamp(12px, 2vw, 16px);
 }
 
-/* ==================== HEADER & NAVIGATION ==================== */
-
-header,
-nav {
-    padding: clamp(12px, 2.5vw, 16px) clamp(12px, 3vw, 24px);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
-/* Safe area for notched devices */
-header {
-    padding-top: calc(var(--safe-area-inset-top) + clamp(12px, 2.5vw, 16px));
-}
-
 /* ==================== MOBILE-FIRST RESPONSIVE BREAKPOINTS ==================== */
 
 /* Phones (320px - 480px) */
@@ -271,12 +227,6 @@ header {
         gap: 12px;
     }
 
-    button,
-    a,
-    .clickable {
-        padding: 10px 14px;
-        min-height: 44px;
-    }
 
     h1 {
         font-size: clamp(20px, 5vw, 24px);

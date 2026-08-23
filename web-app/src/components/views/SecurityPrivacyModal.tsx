@@ -7,12 +7,14 @@ interface SecurityPrivacyModalProps {
     isOpen: boolean;
     onClose: () => void;
     activeVaultName: string;
+    onOpenDevices?: () => void;
 }
 
 export const SecurityPrivacyModal: React.FC<SecurityPrivacyModalProps> = ({
     isOpen,
     onClose,
     activeVaultName,
+    onOpenDevices,
 }) => {
     if (!isOpen) return null;
 
@@ -82,10 +84,40 @@ export const SecurityPrivacyModal: React.FC<SecurityPrivacyModalProps> = ({
                             <span className="spec-badge">Active</span>
                         </div>
                     </div>
+
+                    {onOpenDevices && (
+                        <div style={{ marginTop: '6px' }}>
+                            <button
+                                className="security-devices-action-btn"
+                                onClick={() => {
+                                    onClose();
+                                    onOpenDevices();
+                                }}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    borderRadius: '12px',
+                                    background: 'rgba(255, 201, 40, 0.1)',
+                                    border: '1px solid rgba(255, 201, 40, 0.25)',
+                                    color: '#FFC928',
+                                    fontWeight: 700,
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                }}
+                            >
+                                Manage Connected Devices
+                            </button>
+                        </div>
+                    )}
                 </div>
             </motion.div>
         </div>
     );
 };
+
 
 export default SecurityPrivacyModal;

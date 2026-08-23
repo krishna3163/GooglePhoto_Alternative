@@ -76,7 +76,17 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ photo, onClose, onDelete, onR
                     </div>
                 );
             default:
-                return <img src={photo.url} alt={photo.fileName} className="viewer-media" />;
+                return (
+                    <img
+                        src={photo.url}
+                        alt={photo.fileName}
+                        className="viewer-media"
+                        onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84';
+                        }}
+                    />
+                );
+
         }
     };
 

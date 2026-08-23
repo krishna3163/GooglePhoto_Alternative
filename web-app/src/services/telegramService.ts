@@ -3,6 +3,12 @@ import type { TelegramConfig } from '../types';
 
 const TELEGRAM_API_BASE = 'https://api.telegram.org/bot';
 
+export const isMockConfig = (config?: TelegramConfig | null): boolean => {
+    if (!config || !config.token) return true;
+    const t = config.token.toLowerCase();
+    return t.includes('mock') || t.includes('demo') || t.startsWith('bot_') || t === 'mock_token' || config.chatId === 'demo_chat_id';
+};
+
 export const uploadFileToTelegram = async (
     config: TelegramConfig,
     file: File,
@@ -13,6 +19,11 @@ export const uploadFileToTelegram = async (
 
     if (!token || !chatId) {
         throw new Error('Telegram config not set');
+    }
+
+    if (isMockConfig(config)) {
+        onProgress?.(100);
+        return { fileId: `mock_file_${Date.now()}`, messageId: Date.now() };
     }
 
     const formData = new FormData();
@@ -48,7 +59,7 @@ export const uploadFileToTelegram = async (
 
 export const deleteTelegramMessage = async (config: TelegramConfig, messageId: number): Promise<void> => {
     const { token, chatId } = config;
-    if (!token || !chatId) throw new Error('Telegram config not set');
+    if (!token || !chatId || isMockConfig(config)) return;
 
     try {
         await axios.post(`${TELEGRAM_API_BASE}${token}/deleteMessage`, {
@@ -56,13 +67,17 @@ export const deleteTelegramMessage = async (config: TelegramConfig, messageId: n
             message_id: messageId
         });
     } catch (error: any) {
-        console.error('Telegram delete error:', error.response?.data || error.message);
+        console.warn('Telegram delete notice:', error.response?.data || error.message);
     }
 };
 
 export const getFileDownloadUrl = async (config: TelegramConfig, fileId: string): Promise<string> => {
     const { token } = config;
     if (!token) throw new Error("No token");
+
+    if (isMockConfig(config) || fileId.startsWith('mock_')) {
+        return 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80';
+    }
 
     const response = await axios.get(`${TELEGRAM_API_BASE}${token}/getFile?file_id=${fileId}`);
     const filePath = response.data?.result?.file_path;
@@ -71,9 +86,10 @@ export const getFileDownloadUrl = async (config: TelegramConfig, fileId: string)
 
     return `https://api.telegram.org/file/bot${token}/${filePath}`;
 };
+
 export const sendTextMessage = async (config: TelegramConfig, text: string): Promise<void> => {
     const { token, chatId } = config;
-    if (!token || !chatId) throw new Error('Telegram config not set');
+    if (!token || !chatId || isMockConfig(config)) return;
 
     try {
         await axios.post(`${TELEGRAM_API_BASE}${token}/sendMessage`, {
@@ -81,12 +97,17 @@ export const sendTextMessage = async (config: TelegramConfig, text: string): Pro
             text: text
         });
     } catch (error: any) {
-        console.error('Telegram message error:', error.response?.data || error.message);
-        throw error;
+        console.warn('Telegram message notice:', error.response?.data || error.message);
     }
 };
 
 export const getBotInfo = async (token: string): Promise<{ username: string; first_name: string }> => {
+    if (token.toLowerCase().includes('mock') || token.toLowerCase().includes('demo')) {
+        return {
+            username: 'TeleGphotoCloudBot',
+            first_name: 'TeleGphoto Bot'
+        };
+    }
     const response = await axios.get(`${TELEGRAM_API_BASE}${token}/getMe`);
     if (response.data?.ok) {
         return {
@@ -139,6 +160,18 @@ export const uploadSyncManifest = async (
     const { token, chatId } = config;
     if (!token || !chatId) throw new Error('Telegram config not set');
 
+    if (isMockConfig(config)) {
+        const fileId = `mock_manifest_file_${revision}`;
+        const messageId = Date.now();
+        localStorage.setItem('telegphoto_remote_manifest_ref', JSON.stringify({
+            fileId,
+            messageId,
+            revision,
+            metadata
+        }));
+        return { fileId, messageId, revision };
+    }
+
     const manifestFile = new File([encryptedBlob], `manifest_rev_${revision}.dat`, {
         type: 'application/octet-stream'
     });
@@ -179,6 +212,7 @@ export const uploadSyncManifest = async (
 
     return { fileId, messageId, revision };
 };
+
 
 export const downloadLatestSyncManifest = async (
     config: TelegramConfig

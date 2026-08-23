@@ -114,8 +114,16 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({
                         <span>{photo.fileName}</span>
                     </div>
                 ) : (
-                    <img src={photo.url} alt={photo.fileName} className="details-preview-media" />
+                    <img
+                        src={photo.url}
+                        alt={photo.fileName}
+                        className="details-preview-media"
+                        onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84';
+                        }}
+                    />
                 )}
+
                 <div className="details-preview-expand-hint">
                     <ExternalLink size={14} /> Click to expand
                 </div>

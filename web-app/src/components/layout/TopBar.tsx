@@ -3,8 +3,6 @@ import {
     Search,
     Filter,
     Upload,
-    Sun,
-    Moon,
     Bell,
     Shield,
     Lock,
@@ -13,6 +11,7 @@ import {
     Menu,
     X,
     Layers
+
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SyncStatusIndicator from '../sync/SyncStatusIndicator';
@@ -32,8 +31,6 @@ interface TopBarProps {
     onFiltersChange: (filters: FilterState) => void;
     onUploadClick: () => void;
     onMobileMenuClick: () => void;
-    theme: 'dark' | 'light';
-    onThemeToggle: () => void;
     userName: string;
     userPhotoUrl?: string;
     onOpenSettings: () => void;
@@ -57,10 +54,9 @@ export const TopBar: React.FC<TopBarProps> = ({
     onFiltersChange,
     onUploadClick,
     onMobileMenuClick,
-    theme,
-    onThemeToggle,
     userName,
     userPhotoUrl,
+
     onOpenSettings,
     onOpenStorage,
     onOpenSecurity,
@@ -123,9 +119,10 @@ export const TopBar: React.FC<TopBarProps> = ({
                         type="text"
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder="Search your photos..."
+                        placeholder="Search photos..."
                         className="search-text-input"
                     />
+
                     {searchQuery ? (
                         <button className="search-clear-btn" onClick={() => onSearchChange('')}>
                             <X size={16} />
@@ -235,13 +232,9 @@ export const TopBar: React.FC<TopBarProps> = ({
 
             {/* Right Tools Area */}
             <div className="topbar-right-tools">
-                {/* Theme Toggle */}
-                <button className="topbar-tool-icon-btn" onClick={onThemeToggle} title="Toggle Theme">
-                    {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
-                </button>
-
                 {/* Notifications Bell */}
                 <div className="notif-dropdown-container" ref={notifRef}>
+
                     <button
                         className="topbar-tool-icon-btn notif-btn"
                         onClick={() => setNotificationsOpen(!notificationsOpen)}

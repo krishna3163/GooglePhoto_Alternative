@@ -1,0 +1,218 @@
+.login-view-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: radial-gradient(circle at top center, #171F2B 0%, #080B10 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-view-card {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(13, 18, 25, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 28px;
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+  position: relative;
+  z-index: 2;
+}
+
+.login-brand-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-logo-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: rgba(255, 201, 40, 0.1);
+  border: 1px solid rgba(255, 201, 40, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  box-shadow: 0 0 24px rgba(255, 201, 40, 0.15);
+}
+
+.login-app-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.login-app-subtitle {
+  font-size: 13px;
+  color: #A7AFBC;
+  margin: 0;
+}
+
+.login-security-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 201, 40, 0.08);
+  border: 1px solid rgba(255, 201, 40, 0.2);
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #FFC928;
+  margin-bottom: 24px;
+}
+
+.login-error-banner {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 92, 108, 0.12);
+  border: 1px solid rgba(255, 92, 108, 0.3);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #FF5C6C;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.login-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login-input-group label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #E2E8F0;
+}
+
+.login-field-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #080B10;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 0 16px;
+  height: 48px;
+  transition: all 0.2s ease;
+}
+
+.login-field-box:focus-within {
+  border-color: #FFC928;
+  box-shadow: 0 0 0 1px #FFC928, 0 0 16px rgba(255, 201, 40, 0.2);
+  background: #0D1219;
+}
+
+.login-field-box .field-icon {
+  color: #717D96;
+  flex-shrink: 0;
+}
+
+.login-field-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+}
+
+.login-field-box input::placeholder {
+  color: #4A5568;
+}
+
+.login-submit-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 16px;
+  background: #FFC928;
+  color: #080B10;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 24px rgba(255, 201, 40, 0.25);
+}
+
+.login-submit-btn:hover:not(:disabled) {
+  background: #FFD452;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(255, 201, 40, 0.35);
+}
+
+.login-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-footer-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  font-size: 13.5px;
+  color: #A7AFBC;
+}
+
+.login-register-link {
+  background: none;
+  border: none;
+  color: #FFC928;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13.5px;
+  padding: 0;
+}
+
+.login-register-link:hover {
+  text-decoration: underline;
+}
+
+.btn-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(8, 11, 16, 0.2);
+  border-top-color: #080B10;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

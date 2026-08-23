@@ -22,9 +22,12 @@ import {
     downloadLatestSyncManifest,
     uploadSyncManifest,
     updateSyncManifest,
+    isMockConfig,
 } from '../services/telegramService';
 import { storeVectorRecord, CURRENT_MODEL_VERSION } from '../intelligence/vectorIndexService';
 import { generateTextEmbedding } from '../intelligence/embeddingService';
+import { DEMO_PHOTOS } from '../utils/demoData';
+
 
 export interface SyncExecutionResult {
     success: boolean;
@@ -217,8 +220,14 @@ export async function performInitialOnboardingSync(
     const total = manifest.media.length;
 
     const photos = manifestMediaToPhotoAssets(manifest.media, (fileId) => {
-        return `https://api.telegram.org/file/bot${config.token}/mock_${fileId}`;
+        const demoMatch = DEMO_PHOTOS.find(d => d.id === fileId || d.fileName.includes(fileId));
+        if (demoMatch) return demoMatch.url;
+        if (isMockConfig(config) || fileId.startsWith('demo-') || fileId.startsWith('mock_')) {
+            return `https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84`;
+        }
+        return `https://api.telegram.org/file/bot${config.token}/${fileId}`;
     });
+
 
     // Background indexing of search vectors
     let processed = 0;

@@ -47,7 +47,11 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
                         alt={photo.fileName}
                         className="card-media-element"
                         loading="lazy"
+                        onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84';
+                        }}
                     />
+
                 )}
 
                 {/* Top Badges */}
@@ -107,3 +111,6 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
         </motion.div>
     );
 };
+
+export default PhotoCard;
+
