@@ -148,11 +148,18 @@ export class MigrationService {
     }
 
     // 4. Record Sync Event
-    await queryPg(
-      `INSERT INTO sync_events (user_id, entity_type, entity_id, operation, sync_version, payload)
-       VALUES ($1, 'library', $1, 'MIGRATE', (SELECT COALESCE(MAX(sync_version), 0) + 1 FROM sync_events WHERE user_id = $1), $2)`,
-      [userId, JSON.stringify({ migratedMedia, migratedAlbums })]
-    );
+    try {
+      const nextSyncVerRes = await queryPg('SELECT COALESCE(MAX(sync_version), 0) + 1 AS ver FROM sync_events WHERE user_id = $1', [userId]);
+      const nextVer = Number(nextSyncVerRes.rows[0]?.ver || 1);
+
+      await queryPg(
+        `INSERT INTO sync_events (user_id, entity_type, entity_id, operation, sync_version, payload)
+         VALUES ($1, 'library', $2, 'MIGRATE', $3, $4)`,
+        [userId, String(userId), nextVer, JSON.stringify({ migratedMedia, migratedAlbums })]
+      );
+    } catch (syncEvtErr) {
+      console.warn('Sync event insertion notice:', syncEvtErr);
+    }
 
     return {
       migratedMedia,
