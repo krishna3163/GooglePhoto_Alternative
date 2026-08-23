@@ -115,6 +115,21 @@ export interface TelegramManifestDownloadResult {
     messageId: number;
 }
 
+export const pinChatMessage = async (config: TelegramConfig, messageId: number): Promise<void> => {
+    const { token, chatId } = config;
+    if (!token || !chatId) return;
+
+    try {
+        await axios.post(`${TELEGRAM_API_BASE}${token}/pinChatMessage`, {
+            chat_id: chatId,
+            message_id: messageId,
+            disable_notification: true
+        });
+    } catch (err: any) {
+        console.warn('Telegram pin message notice:', err.response?.data || err.message);
+    }
+};
+
 export const uploadSyncManifest = async (
     config: TelegramConfig,
     encryptedBlob: Blob,
@@ -159,17 +174,47 @@ export const uploadSyncManifest = async (
         metadata
     }));
 
+    // Pin manifest message for remote discovery on fresh devices & Incognito
+    await pinChatMessage(config, messageId);
+
     return { fileId, messageId, revision };
 };
 
 export const downloadLatestSyncManifest = async (
     config: TelegramConfig
 ): Promise<TelegramManifestDownloadResult | null> => {
-    const { token } = config;
+    const { token, chatId } = config;
     if (!token) throw new Error('Telegram config not set');
 
-    // Retrieve cached reference or query
-    const refData = localStorage.getItem('telegphoto_remote_manifest_ref');
+    // 1. Check local cache reference first (fast path)
+    let refData = localStorage.getItem('telegphoto_remote_manifest_ref');
+
+    // 2. If no local cache (Fresh Device / Incognito Session), discover remotely via Telegram Chat
+    if (!refData && chatId) {
+        try {
+            const chatRes = await axios.get(`${TELEGRAM_API_BASE}${token}/getChat?chat_id=${chatId}`);
+            const pinned = chatRes.data?.result?.pinned_message;
+
+            if (pinned && pinned.caption && pinned.caption.includes(MANIFEST_CAPTION_PREFIX)) {
+                const parsedCaption = JSON.parse(pinned.caption);
+                const fileId = pinned.document?.file_id;
+                const messageId = pinned.message_id;
+
+                if (fileId && messageId) {
+                    refData = JSON.stringify({
+                        fileId,
+                        messageId,
+                        revision: parsedCaption.rev || 1,
+                        metadata: parsedCaption.meta || {}
+                    });
+                    localStorage.setItem('telegphoto_remote_manifest_ref', refData);
+                }
+            }
+        } catch (discoverErr: any) {
+            console.warn('Remote manifest discovery notice:', discoverErr.response?.data || discoverErr.message);
+        }
+    }
+
     if (!refData) return null;
 
     try {
@@ -190,16 +235,10 @@ export const downloadLatestSyncManifest = async (
 };
 
 export const getManifestRevision = async (
-    _config: TelegramConfig
+    config: TelegramConfig
 ): Promise<number | null> => {
-    const refData = localStorage.getItem('telegphoto_remote_manifest_ref');
-    if (!refData) return null;
-    try {
-        const parsed = JSON.parse(refData);
-        return parsed.revision ?? null;
-    } catch {
-        return null;
-    }
+    const res = await downloadLatestSyncManifest(config);
+    return res ? res.revision : null;
 };
 
 export const updateSyncManifest = async (
@@ -212,7 +251,7 @@ export const updateSyncManifest = async (
     const uploadRes = await uploadSyncManifest(config, encryptedBlob, metadata, revision);
 
     // Clean up older manifest message asynchronously to prevent storage clutter
-    if (oldMessageId) {
+    if (oldMessageId && oldMessageId !== uploadRes.messageId) {
         deleteTelegramMessage(config, oldMessageId).catch(() => {});
     }
 

@@ -18,6 +18,8 @@ import { initializeVault } from './services/cryptoService';
 // Cloud Sync Engine
 import type { LocalSyncState, SyncPreferences, SyncOperation } from './sync/syncTypes';
 import { performSync, performInitialOnboardingSync } from './sync/syncService';
+import { runLegacyDataMigration } from './sync/migrationService';
+import { deriveUserIdentity } from './auth/identityService';
 import {
     enqueueSyncOperation,
     getStoredSyncQueue,
@@ -98,6 +100,7 @@ const App: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [userName] = useState(() => getStoredUserName() || 'Krishna');
     const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+    const userIdentity = useMemo(() => deriveUserIdentity(config?.chatId || 'guest', userName), [config?.chatId, userName]);
 
     // Master Vault Key in memory
     const [masterVaultKey, setMasterVaultKey] = useState<CryptoKey | null>(null);
@@ -197,7 +200,7 @@ const App: React.FC = () => {
     ]);
 
     // -----------------------------------------------------------------------
-    // Master Vault Key Initialization & Sync Lifecycle
+    // Master Vault Key Initialization, Remote Discovery & Sync Lifecycle
     // -----------------------------------------------------------------------
     useEffect(() => {
         const initCryptoAndSync = async () => {
@@ -206,23 +209,27 @@ const App: React.FC = () => {
                 const { masterKey } = await initializeVault('TeleGphotoMasterVaultKey');
                 setMasterVaultKey(masterKey);
 
-                // Check if device is new / empty and needs onboarding sync
-                const remoteRef = localStorage.getItem('telegphoto_remote_manifest_ref');
-                if (photos.length === 0 && config && remoteRef) {
-                    setIsOnboardingSync(true);
-                    const res = await performInitialOnboardingSync(config, masterKey, (synced, total) => {
-                        setOnboardingSyncedCount(synced);
-                        setOnboardingTotalCount(total);
-                    });
-                    if (res) {
-                        setPhotos(res.photos);
-                        setAlbums(res.albums);
-                        setVaults(res.vaults);
-                        localStorage.setItem('uploaded_photos', JSON.stringify(res.photos));
-                        localStorage.setItem('telegphoto_albums', JSON.stringify(res.albums));
-                        addToast(`Restored ${res.photos.length} items from Telegram Cloud`, 'success');
+                if (config) {
+                    if (photos.length === 0) {
+                        // Fresh Device / Incognito Session: Discover remote manifest from Telegram
+                        setIsOnboardingSync(true);
+                        const res = await performInitialOnboardingSync(config, masterKey, (synced, total) => {
+                            setOnboardingSyncedCount(synced);
+                            setOnboardingTotalCount(total);
+                        });
+                        if (res && res.photos.length > 0) {
+                            setPhotos(res.photos);
+                            setAlbums(res.albums);
+                            setVaults(res.vaults);
+                            localStorage.setItem('uploaded_photos', JSON.stringify(res.photos));
+                            localStorage.setItem('telegphoto_albums', JSON.stringify(res.albums));
+                            addToast(`Restored ${res.photos.length} items from Telegram Cloud`, 'success');
+                        }
+                        setIsOnboardingSync(false);
+                    } else {
+                        // Existing installation: check if legacy migration to remote manifest is needed
+                        await runLegacyDataMigration(config, masterKey, photos, albums, vaults);
                     }
-                    setIsOnboardingSync(false);
                 }
             } catch (err) {
                 console.warn('Crypto/Sync initialization notice:', err);
@@ -826,7 +833,7 @@ const App: React.FC = () => {
                     onMobileMenuClick={() => setSidebarMobileOpen(true)}
                     theme={theme}
                     onThemeToggle={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
-                    userName={userName}
+                    userName={userIdentity.displayName}
                     onOpenSettings={() => setShowSettingsModal(true)}
                     onOpenStorage={() => setShowStorageModal(true)}
                     onOpenSecurity={() => setShowSecurityModal(true)}
