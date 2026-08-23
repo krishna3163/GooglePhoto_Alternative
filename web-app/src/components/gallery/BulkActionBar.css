@@ -1,6 +1,6 @@
 .bulk-action-bar-dock {
-    position: fixed;
-    bottom: 32px;
+    position: absolute;
+    bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
     background: #171F2B;
@@ -14,6 +14,7 @@
     z-index: 500;
     backdrop-filter: blur(24px);
     user-select: none;
+    max-width: calc(100% - 32px);
 }
 
 .bulk-selected-badge {

@@ -1,11 +1,11 @@
 .mobile-bottom-dock-wrapper {
-    position: fixed;
-    bottom: 20px;
+    position: absolute;
+    bottom: 16px;
     left: 0;
     right: 0;
     display: none;
     justify-content: center;
-    z-index: 900;
+    z-index: 450;
     pointer-events: none;
     user-select: none;
 }

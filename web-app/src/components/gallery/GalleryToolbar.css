@@ -5,6 +5,10 @@
     padding: 12px 24px 8px 24px;
     gap: 16px;
     user-select: none;
+    background: #080B10;
+    position: relative;
+    z-index: 30;
+    flex-shrink: 0;
 }
 
 /* Left Date Dropdown */

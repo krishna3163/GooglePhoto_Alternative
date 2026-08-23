@@ -46,6 +46,18 @@ export function setCredentialsCookie(hasConfig: boolean): void {
   document.cookie = `${COOKIE_CONFIG_FLAG}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
 }
 
+export function clearAllCredentialsAndStorage(): void {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.clear();
+  }
+  if (typeof sessionStorage !== 'undefined') {
+    sessionStorage.clear();
+  }
+  if (typeof document !== 'undefined') {
+    document.cookie = `${COOKIE_CONFIG_FLAG}=0; path=/; max-age=0; SameSite=Lax`;
+  }
+}
+
 export function hasCredentialsCookie(): boolean {
   if (typeof document === 'undefined') return false;
   return document.cookie.split(';').some(s => s.trim().startsWith(COOKIE_CONFIG_FLAG + '=1'));

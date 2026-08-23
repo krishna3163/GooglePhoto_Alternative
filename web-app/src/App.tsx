@@ -6,6 +6,7 @@ import {
     getStoredPhotos,
     getStoredPinData,
     setCredentialsCookie,
+    clearAllCredentialsAndStorage,
 } from './utils/storage';
 import { generateMemories } from './intelligence/memoryService';
 import type { MemoryHighlight } from './intelligence/types';
@@ -14,6 +15,7 @@ import { extractTextFromImage } from './services/ocrService';
 import { storeVectorRecord, deleteVectorRecord, clearVectorIndex, CURRENT_MODEL_VERSION } from './intelligence/vectorIndexService';
 import { generateTextEmbedding } from './intelligence/embeddingService';
 import { initializeVault } from './services/cryptoService';
+import { clearActiveSession } from './auth/sessionService';
 
 // Cloud Sync Engine
 import type { LocalSyncState, SyncPreferences, SyncOperation } from './sync/syncTypes';
@@ -34,6 +36,7 @@ import {
 import SyncActivityModal from './components/sync/SyncActivityModal';
 import OnboardingSyncOverlay from './components/sync/OnboardingSyncOverlay';
 import SyncSettingsView from './components/views/SyncSettingsView';
+import AuthWelcomeView from './components/auth/AuthWelcomeView';
 
 // Layout & Components
 import Sidebar, { type VaultInfo } from './components/layout/Sidebar';
@@ -790,8 +793,35 @@ const App: React.FC = () => {
         addToast('Local decrypted cache cleared', 'info');
     };
 
+    const handleSignOut = () => {
+        clearAllCredentialsAndStorage();
+        clearActiveSession();
+        setConfig(null);
+        setPhotos([]);
+        setMasterVaultKey(null);
+        setSelectedPhoto(null);
+        setSelectedIds(new Set());
+        addToast('Signed out of TeleGphoto', 'info');
+    };
+
     if (loading) {
         return <SplashLoader />;
+    }
+
+    if (!config) {
+        return (
+            <>
+                <AuthWelcomeView
+                    onLogin={(newCfg) => {
+                        localStorage.setItem('telegram_config', JSON.stringify(newCfg));
+                        setCredentialsCookie(true);
+                        setConfig(newCfg);
+                        addToast('Connected to Telegram Vault', 'success');
+                    }}
+                />
+                <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+            </>
+        );
     }
 
     const storedPinData = getStoredPinData();
@@ -838,10 +868,7 @@ const App: React.FC = () => {
                     onOpenStorage={() => setShowStorageModal(true)}
                     onOpenSecurity={() => setShowSecurityModal(true)}
                     onLockApp={() => setIsLocked(true)}
-                    onSignOut={() => {
-                        localStorage.clear();
-                        window.location.reload();
-                    }}
+                    onSignOut={handleSignOut}
                     notifications={notifications}
                     onClearNotifications={() => setNotifications([])}
                     searchInputRef={searchInputRef}
