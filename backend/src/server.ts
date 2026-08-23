@@ -6,12 +6,15 @@ async function bootstrap() {
   try {
     console.log('Starting TeleGphoto Backend Service...');
     
-    // Connect to MongoDB Atlas
-    await connectDatabase();
+    // Connect to database if configured
+    await connectDatabase().catch((err) => {
+      console.warn('Database initialization warning:', err?.message || err);
+    });
 
-    const server = app.listen(env.PORT, () => {
-      console.log(`✓ TeleGphoto API Server running on port ${env.PORT} [${env.NODE_ENV}]`);
-      console.log(`✓ Health endpoint: http://localhost:${env.PORT}/health`);
+    const port = env.PORT || 4000;
+    const server = app.listen(port, '0.0.0.0', () => {
+      console.log(`✓ TeleGphoto API Server running on port ${port} [${env.NODE_ENV}]`);
+      console.log(`✓ Health endpoint: http://0.0.0.0:${port}/health`);
     });
 
     // Graceful Shutdown

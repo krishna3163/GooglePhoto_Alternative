@@ -6,7 +6,8 @@ dotenv.config();
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.string().default('4000').transform((v) => parseInt(v, 10)),
-  MONGODB_URI: z.string().default('mongodb://127.0.0.1:27017/telegphoto'),
+  MONGODB_URI: z.string().optional(),
+  DATABASE_URL: z.string().optional(),
   JWT_SECRET: z.string().min(16).default('development_jwt_secret_must_be_long_and_safe_12345'),
   JWT_REFRESH_SECRET: z.string().min(16).default('development_jwt_refresh_secret_must_be_long_and_safe_67890'),
   ACCESS_TOKEN_EXPIRES_IN: z.string().default('15m'),

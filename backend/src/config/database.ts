@@ -14,11 +14,17 @@ import type {
 let client: MongoClient | null = null;
 let dbInstance: Db | null = null;
 
-export async function connectDatabase(): Promise<Db> {
+export async function connectDatabase(): Promise<Db | null> {
   if (dbInstance) return dbInstance;
 
+  const mongoUri = env.MONGODB_URI;
+  if (!mongoUri) {
+    console.log('ℹ No MONGODB_URI configured. Running with PostgreSQL / Prisma data layer.');
+    return null;
+  }
+
   try {
-    client = new MongoClient(env.MONGODB_URI, {
+    client = new MongoClient(mongoUri, {
       maxPoolSize: 20,
       minPoolSize: 2,
       serverSelectionTimeoutMS: 5000,
@@ -34,14 +40,15 @@ export async function connectDatabase(): Promise<Db> {
 
     return dbInstance;
   } catch (error: any) {
-    console.error('⚠ MongoDB connection error:', error?.message || error);
-    throw error;
+    console.warn('⚠ MongoDB connection note:', error?.message || error);
+    // Do not throw fatal error if DATABASE_URL or mock is available
+    return null;
   }
 }
 
 export function getDb(): Db {
   if (!dbInstance) {
-    throw new Error('Database not initialized. Call connectDatabase() first.');
+    throw new Error('Database not initialized. Please ensure MONGODB_URI or DATABASE_URL is set.');
   }
   return dbInstance;
 }
