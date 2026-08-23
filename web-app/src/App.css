@@ -3,7 +3,7 @@
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background: var(--bg-primary);
+    background: #05070a;
     color: var(--text-primary);
     position: relative;
 }
@@ -15,7 +15,9 @@
     height: 100vh;
     min-width: 0;
     overflow: hidden;
-    background: #080B10;
+    background:
+        radial-gradient(circle at 50% -20%, rgba(255, 201, 40, 0.055), transparent 38%),
+        #080B10;
     position: relative;
 }
 
@@ -28,6 +30,11 @@
     min-height: 0;
     padding-bottom: 90px;
     scroll-behavior: smooth;
+    scrollbar-gutter: stable;
+}
+
+.tg-view-scroll-container > * {
+    animation: fadeIn 280ms ease both;
 }
 
 /* Animations */
@@ -61,5 +68,9 @@
 @media (max-width: 768px) {
     .telegphoto-app-root {
         flex-direction: column;
+    }
+
+    .tg-center-viewport {
+        height: 100dvh;
     }
 }

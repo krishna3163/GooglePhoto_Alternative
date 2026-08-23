@@ -1,8 +1,8 @@
 .tg-photo-grid-wrapper {
-    padding: 12px 24px 80px 24px;
+    padding: 12px 24px 96px 24px;
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 30px;
     user-select: none;
 }
 
@@ -28,8 +28,8 @@
 /* Grid Layout */
 .date-group-grid.view-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+    gap: 12px;
 }
 
 /* Masonry Layout */
@@ -49,8 +49,8 @@
 /* Photo Card Item */
 .photo-card-item {
     position: relative;
-    border-radius: var(--radius-lg);
-    background: #0D1219;
+    border-radius: 11px;
+    background: #10151B;
     border: 1px solid rgba(255, 255, 255, 0.08);
     cursor: pointer;
     overflow: hidden;
@@ -59,7 +59,8 @@
 
 .photo-card-item:hover {
     border-color: rgba(255, 201, 40, 0.4);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
+    box-shadow: var(--shadow-premium);
+    transform: translateY(-2px);
 }
 
 .photo-card-item.selected {
@@ -69,7 +70,7 @@
 
 .card-media-wrapper {
     width: 100%;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1.08 / 1;
     position: relative;
     overflow: hidden;
     background: #121923;
@@ -130,6 +131,10 @@
 
 .photo-card-item:hover .card-select-checkbox,
 .card-select-checkbox.checked {
+    opacity: 1;
+}
+
+.photo-card-item:focus-within .card-select-checkbox {
     opacity: 1;
 }
 
@@ -289,7 +294,15 @@
         padding: 12px 16px 90px 16px;
     }
     .date-group-grid.view-grid {
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-        gap: 8px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .tg-photo-grid-wrapper {
+        gap: 24px;
+    }
+
+    .date-group-title {
+        font-size: 13px;
     }
 }
