@@ -1,8 +1,7 @@
 import axios, { type AxiosInstance, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
-
-// Resolve API base URL: defaults to Render production or local backend proxy
-export const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:4000/api/v1';
+// Resolve API base URL: defaults to Render production backend
+export const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'https://telegphoto-backend.onrender.com/api/v1';
 
 let inMemoryAccessToken: string | null = null;
 
