@@ -140,6 +140,72 @@ npm run dev
 
 ---
 
+## 🗺️ Visionary Feature Roadmap & Master Plan
+
+We are evolving **TeleGphoto** from a simple storage client into a full-fledged, privacy-first **Google Photos & Apple Photos killer**. Here is the active engineering roadmap:
+
+### 🏆 1. Google Photos Parity & Core UX (Phase 1)
+- [ ] **📅 Smart Timeline View**: Year → Month → Day chronological grouping with sticky date headers and smooth virtualized scrolling.
+- [ ] **📁 Albums & Smart Folders**: Create, rename, and manage albums, plus auto-generated smart albums (Screenshots, Camera, Downloads).
+- [ ] **❤️ Favorites Vault**: Mark photos as favorite with instant filterable gallery.
+- [ ] **🗑️ Trash & Soft Delete**: Safe delete with 30-day recovery and restore capability before permanent channel removal.
+- [ ] **🔍 Advanced Multi-Filter Search**: Search by filename, date range, size, tags, OCR text, and EXIF attributes.
+- [ ] **📸 EXIF & Metadata Inspector**: View camera model, lens, ISO, shutter speed, aperture, resolution, and GPS geolocation coordinates.
+- [ ] **⚡ Upload Queue & Auto-Retry**: Real-time progress bar (MB/s speed, ETA), chunked uploads, and automatic retry on network drops.
+
+### 🔐 2. Zero-Knowledge Privacy & Storage (Phase 2)
+- [ ] **🔒 Client-Side AES-256-GCM Encryption**: Encrypt all photos locally with your private password before uploading to Telegram. Telegram servers only store unreadable ciphertext.
+- [ ] **🗂️ Multi-Vault Support**: Connect multiple distinct Telegram channels (e.g. *Personal Vault*, *Family Gallery*, *Work & Documents*).
+- [ ] **🛡️ App Lock & Biometrics**: Protect your gallery with a local master PIN, password, or device biometric authentication.
+- [ ] **🧹 Duplicate Photo Cleaner**: Detect identical and similar images using SHA-256 and perceptual hash (`pHash`) to free up channel clutter.
+
+### 🧠 3. On-Device AI & Delightful Experience (Phase 3)
+- [ ] **🌅 "On This Day" Memories**: Automated nostalgic throwbacks (e.g., *"1 Year Ago Today"*).
+- [ ] **🔎 Semantic Natural Language Search**: Query photos using descriptive terms like *"beach sunset"*, *"college trip with friends"* using client-side embeddings.
+- [ ] **👤 Local Face Clustering**: On-device face detection and grouping without sending biometric data to external clouds.
+- [ ] **✂️ Built-in Photo Editor**: Crop, rotate, brightness, contrast, and color filters processed entirely in-browser.
+- [ ] **🎬 Video Player with Duration Badges**: In-stream video player with duration stamps, custom thumbnails, and playback controls.
+
+<br>
+
+---
+
+## 🏗️ Next-Gen System Architecture
+
+```text
+                 ┌─────────────────────────┐
+                 │       React 18 / PWA    │
+                 │ (Timeline, Albums, EXIF)│
+                 └────────────┬────────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    │  Local IndexedDB  │
+                    │  (pHash, Search,  │
+                    │   Offline Cache)  │
+                    └─────────┬─────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    │ Client Encryption │
+                    │   (AES-256-GCM)   │
+                    └─────────┬─────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    │  Upload Queue &   │
+                    │  Resumable Sync   │
+                    └─────────┬─────────┘
+                              │ Telegram Bot API
+             ┌────────────────┼────────────────┐
+             ▼                ▼                ▼
+   ┌──────────────────┐┌──────────────┐┌──────────────┐
+   │  Personal Vault  ││ Family Vault ││ Docs Vault   │
+   │ (Private Channel)││ (Channel 2)  ││ (Channel 3)  │
+   └──────────────────┘└──────────────┘└──────────────┘
+```
+
+<br>
+
+---
+
 ## 💻 Tech Stack
 
 - **Core Framework**: React 18 + TypeScript
