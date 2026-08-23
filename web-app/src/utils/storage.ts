@@ -51,19 +51,45 @@ export function hasCredentialsCookie(): boolean {
   return document.cookie.split(';').some(s => s.trim().startsWith(COOKIE_CONFIG_FLAG + '=1'));
 }
 
-const PIN_KEY = 'telegphoto_app_pin';
+const PIN_KEY = 'telegphoto_app_pin_hash';
 const ENCRYPTION_KEY = 'telegphoto_master_enc_key';
 const VAULTS_KEY = 'telegphoto_vaults';
 
-export function getStoredPin(): string | null {
-  if (typeof localStorage === 'undefined') return null;
-  return localStorage.getItem(PIN_KEY);
+export interface StoredPinData {
+  hash: string;
+  salt: string;
 }
 
-export function setStoredPin(pin: string | null): void {
+export async function hashPin(pin: string, customSalt?: string): Promise<StoredPinData> {
+  const enc = new TextEncoder();
+  const salt = customSalt || Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+  const data = enc.encode(salt + pin);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hash = Array.from(new Uint8Array(hashBuffer), b => b.toString(16).padStart(2, '0')).join('');
+  return { hash, salt };
+}
+
+export async function verifyPin(inputPin: string, stored: StoredPinData): Promise<boolean> {
+  if (!stored || !stored.hash || !stored.salt) return false;
+  const computed = await hashPin(inputPin, stored.salt);
+  return computed.hash === stored.hash;
+}
+
+export function getStoredPinData(): StoredPinData | null {
+  if (typeof localStorage === 'undefined') return null;
+  const raw = localStorage.getItem(PIN_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredPinData(pinData: StoredPinData | null): void {
   if (typeof localStorage === 'undefined') return;
-  if (pin) {
-    localStorage.setItem(PIN_KEY, pin);
+  if (pinData) {
+    localStorage.setItem(PIN_KEY, JSON.stringify(pinData));
   } else {
     localStorage.removeItem(PIN_KEY);
   }

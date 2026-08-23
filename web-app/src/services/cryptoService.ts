@@ -105,8 +105,7 @@ export async function initializeVault(password: string): Promise<{ bundle: Vault
     // Generate Recovery Key
     const recoveryBytes = crypto.getRandomValues(new Uint8Array(32));
     const recoveryKey = Array.from(recoveryBytes, b => b.toString(16).padStart(2, '0')).join('');
-    const recoverySalt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
-    const recoveryKEK = await deriveKEK(recoveryKey, recoverySalt);
+    const recoveryKEK = await deriveKEK(recoveryKey, salt);
 
     // Wrap Master Vault Key with password KEK
     const wrapIV = crypto.getRandomValues(new Uint8Array(IV_LENGTH));

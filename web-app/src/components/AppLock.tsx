@@ -1,22 +1,29 @@
 import React, { useState } from 'react';
 import { Lock, Fingerprint, ShieldCheck } from 'lucide-react';
+import type { StoredPinData } from '../utils/storage';
+import { verifyPin } from '../utils/storage';
 import './AppLock.css';
 
 interface AppLockProps {
-    storedPin: string;
+    storedPinData: StoredPinData;
     onUnlock: () => void;
 }
 
-const AppLock: React.FC<AppLockProps> = ({ storedPin, onUnlock }) => {
+const AppLock: React.FC<AppLockProps> = ({ storedPinData, onUnlock }) => {
     const [pin, setPin] = useState('');
     const [error, setError] = useState(false);
+    const [verifying, setVerifying] = useState(false);
 
-    const handleDigit = (digit: string) => {
+    const handleDigit = async (digit: string) => {
+        if (verifying) return;
         if (pin.length < 4) {
             const next = pin + digit;
             setPin(next);
             if (next.length === 4) {
-                if (next === storedPin) {
+                setVerifying(true);
+                const isValid = await verifyPin(next, storedPinData);
+                setVerifying(false);
+                if (isValid) {
                     onUnlock();
                 } else {
                     setError(true);
@@ -32,7 +39,6 @@ const AppLock: React.FC<AppLockProps> = ({ storedPin, onUnlock }) => {
     const handleBiometricUnlock = async () => {
         try {
             if (window.PublicKeyCredential) {
-                // Biometric/platform authenticator check
                 const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
                 if (available) {
                     onUnlock();
@@ -66,14 +72,14 @@ const AppLock: React.FC<AppLockProps> = ({ storedPin, onUnlock }) => {
 
                 <div className="numpad">
                     {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(num => (
-                        <button key={num} className="numpad-btn" onClick={() => handleDigit(num)}>
+                        <button key={num} className="numpad-btn" disabled={verifying} onClick={() => handleDigit(num)}>
                             {num}
                         </button>
                     ))}
                     <button className="numpad-btn action-btn" onClick={handleBiometricUnlock} title="Biometric Unlock">
                         <Fingerprint size={24} />
                     </button>
-                    <button className="numpad-btn" onClick={() => handleDigit('0')}>
+                    <button className="numpad-btn" disabled={verifying} onClick={() => handleDigit('0')}>
                         0
                     </button>
                     <button className="numpad-btn action-btn" onClick={handleClear}>
