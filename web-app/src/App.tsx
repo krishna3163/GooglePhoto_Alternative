@@ -903,14 +903,10 @@ const App: React.FC = () => {
         addToast('Search vector index rebuilt', 'success');
     };
 
-    const handleClearLocalData = () => {
-        if (window.confirm('Clear all local app storage and cached photos?')) {
-            clearAllCredentialsAndStorage();
-            setPhotos([]);
-            setAlbums([]);
-            setVaults(DEFAULT_VAULTS);
-            addToast('All local storage cleared', 'info');
-        }
+    const handleClearLocalCache = () => {
+        localStorage.removeItem('telegphoto_sync_queue');
+        setPendingOperations([]);
+        addToast('Local decrypted cache cleared', 'info');
     };
 
     // -----------------------------------------------------------------------
