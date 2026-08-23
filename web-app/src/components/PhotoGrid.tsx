@@ -1,8 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import type { TelegramConfig, PhotoAsset } from '../types';
 import type { LayoutMode } from '../utils/storage';
 import { FileText, Play, Star, LayoutGrid, List } from 'lucide-react';
 import { motion } from 'framer-motion';
+import MemoriesBanner from './MemoriesBanner';
+import { generateMemories } from '../intelligence/memoryService';
 import './PhotoGrid.css';
 
 interface PhotoGridProps {
@@ -26,6 +28,8 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ config, photos, searchQuery, titl
             </div>
         );
     }
+
+    const memories = useMemo(() => generateMemories(photos), [photos]);
 
     const filteredPhotos = photos.filter(photo =>
         photo.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -109,6 +113,10 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ config, photos, searchQuery, titl
 
     return (
         <div className={`photo-grid-container ${isList ? 'layout-list' : 'layout-grid'}`}>
+            {!searchQuery && (title === 'Photos' || title === 'Memories') && (
+                <MemoriesBanner memories={memories} onPhotoClick={onPhotoClick} />
+            )}
+
             <div className="grid-header">
                 <h2 className="grid-title">{title}</h2>
                 {onLayoutChange && (
