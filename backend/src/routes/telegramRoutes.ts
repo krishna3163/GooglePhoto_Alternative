@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { ObjectId } from 'mongodb';
 import { collections } from '../config/database.js';
@@ -18,7 +18,7 @@ router.post(
   '/connect',
   requireAuth,
   validateRequest({ body: connectSchema }),
-  async (req: AuthRequest, res: Response, next) => {
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { botToken, chatId } = req.body;
       const userObjectId = new ObjectId(req.user!.id);
@@ -66,7 +66,7 @@ router.post(
 );
 
 // GET /api/v1/telegram/status
-router.get('/status', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.get('/status', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userObjectId = new ObjectId(req.user!.id);
     const tgColl = collections.telegramConnections();

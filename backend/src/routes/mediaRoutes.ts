@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { MediaService } from '../services/mediaService.js';
@@ -20,7 +20,7 @@ router.post(
     { name: 'file', maxCount: 1 },
     { name: 'thumbnail', maxCount: 1 },
   ]),
-  async (req: AuthRequest, res: Response, next) => {
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       const file = files?.file?.[0];
@@ -30,7 +30,7 @@ router.post(
         throw new AppError(400, 'NO_FILE', 'No encrypted media file provided in upload');
       }
 
-      const metadataRaw = req.body.metadata ? JSON.parse(req.body.metadata) : req.body;
+      const metadataRaw = req.body?.metadata ? JSON.parse(req.body.metadata) : req.body || {};
 
       const result = await MediaService.uploadMedia(req.user!.id, {
         id: metadataRaw.id || crypto.randomUUID(),
@@ -70,7 +70,7 @@ router.post(
 );
 
 // GET /api/v1/media
-router.get('/', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.get('/', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const result = await MediaService.getGalleryMedia(req.user!.id, {
       vaultId: req.query.vaultId as string,
@@ -91,7 +91,7 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response, next) => {
 });
 
 // GET /api/v1/media/:id
-router.get('/:id', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.get('/:id', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const doc = await MediaService.getMediaById(req.user!.id, req.params.id);
     res.json({
@@ -104,7 +104,7 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res: Response, next) =>
 });
 
 // GET /api/v1/media/:id/download
-router.get('/:id/download', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.get('/:id/download', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const buffer = await MediaService.downloadEncryptedMedia(req.user!.id, req.params.id);
     res.setHeader('Content-Type', 'application/octet-stream');
@@ -115,7 +115,7 @@ router.get('/:id/download', requireAuth, async (req: AuthRequest, res: Response,
 });
 
 // GET /api/v1/media/:id/thumbnail
-router.get('/:id/thumbnail', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.get('/:id/thumbnail', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const buffer = await MediaService.downloadEncryptedThumbnail(req.user!.id, req.params.id);
     res.setHeader('Content-Type', 'application/octet-stream');
@@ -126,7 +126,7 @@ router.get('/:id/thumbnail', requireAuth, async (req: AuthRequest, res: Response
 });
 
 // POST /api/v1/media/:id/favorite
-router.post('/:id/favorite', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.post('/:id/favorite', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const isFav = await MediaService.toggleFavorite(req.user!.id, req.params.id, req.body?.favorite);
     res.json({ success: true, data: { favorite: isFav } });
@@ -136,7 +136,7 @@ router.post('/:id/favorite', requireAuth, async (req: AuthRequest, res: Response
 });
 
 // POST /api/v1/media/:id/trash
-router.post('/:id/trash', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.post('/:id/trash', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     await MediaService.moveToTrash(req.user!.id, req.params.id);
     res.json({ success: true, message: 'Moved to trash' });
@@ -146,7 +146,7 @@ router.post('/:id/trash', requireAuth, async (req: AuthRequest, res: Response, n
 });
 
 // POST /api/v1/media/:id/restore
-router.post('/:id/restore', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.post('/:id/restore', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     await MediaService.restoreFromTrash(req.user!.id, req.params.id);
     res.json({ success: true, message: 'Restored from trash' });
@@ -156,7 +156,7 @@ router.post('/:id/restore', requireAuth, async (req: AuthRequest, res: Response,
 });
 
 // DELETE /api/v1/media/:id/permanent
-router.delete('/:id/permanent', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.delete('/:id/permanent', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     await MediaService.permanentDelete(req.user!.id, req.params.id);
     res.json({ success: true, message: 'Permanently deleted' });

@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { AuthService } from '../services/authService.js';
 import { validateRequest } from '../middleware/validation.js';
@@ -46,7 +46,7 @@ router.post(
   '/register',
   authRateLimiter,
   validateRequest({ body: registerSchema }),
-  async (req, res, next) => {
+  async (req, res: Response, next: NextFunction) => {
     try {
       const result = await AuthService.register(req.body);
 
@@ -78,7 +78,7 @@ router.post(
   '/login',
   authRateLimiter,
   validateRequest({ body: loginSchema }),
-  async (req, res, next) => {
+  async (req, res: Response, next: NextFunction) => {
     try {
       const result = await AuthService.login(req.body);
 
@@ -105,7 +105,7 @@ router.post(
 );
 
 // POST /api/v1/auth/refresh
-router.post('/refresh', async (req, res, next) => {
+router.post('/refresh', async (req, res: Response, next: NextFunction) => {
   try {
     const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
     if (!refreshToken) {
@@ -138,7 +138,7 @@ router.post('/refresh', async (req, res, next) => {
 });
 
 // POST /api/v1/auth/logout
-router.post('/logout', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.post('/logout', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (req.user?.sessionId) {
       await AuthService.logout(req.user.sessionId);
@@ -165,7 +165,7 @@ router.post(
   '/change-password',
   requireAuth,
   validateRequest({ body: changePasswordSchema }),
-  async (req: AuthRequest, res: Response, next) => {
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       await AuthService.changePassword(
         req.user!.id,

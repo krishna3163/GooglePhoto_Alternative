@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { ObjectId } from 'mongodb';
 import { collections } from '../config/database.js';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
@@ -8,7 +8,7 @@ import type { VaultDocument } from '../types/index.js';
 const router = Router();
 
 // GET /api/v1/vaults
-router.get('/', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.get('/', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userObjectId = new ObjectId(req.user!.id);
     const vaultsColl = collections.vaults();
@@ -32,11 +32,11 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response, next) => {
 });
 
 // POST /api/v1/vaults
-router.post('/', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.post('/', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userObjectId = new ObjectId(req.user!.id);
     const vaultsColl = collections.vaults();
-    const { name, description, encryptedVaultKey, wrappedWithRecovery, salt, keyVersion } = req.body;
+    const { name, description, encryptedVaultKey, wrappedWithRecovery, salt, keyVersion } = req.body || {};
 
     if (!name || !encryptedVaultKey || !salt) {
       throw new AppError(400, 'MISSING_FIELDS', 'Vault name, encrypted key, and salt are required');

@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { ObjectId } from 'mongodb';
 import { collections } from '../config/database.js';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
@@ -8,7 +8,7 @@ import type { AlbumDocument } from '../types/index.js';
 const router = Router();
 
 // GET /api/v1/albums
-router.get('/', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.get('/', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userObjectId = new ObjectId(req.user!.id);
     const albumsColl = collections.albums();
@@ -32,11 +32,11 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response, next) => {
 });
 
 // POST /api/v1/albums
-router.post('/', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.post('/', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userObjectId = new ObjectId(req.user!.id);
     const albumsColl = collections.albums();
-    const { id, name, description, vaultId, mediaIds, coverMediaId } = req.body;
+    const { id, name, description, vaultId, mediaIds, coverMediaId } = req.body || {};
 
     if (!name) {
       throw new AppError(400, 'MISSING_NAME', 'Album name is required');
@@ -72,7 +72,7 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response, next) => {
 });
 
 // DELETE /api/v1/albums/:id
-router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userObjectId = new ObjectId(req.user!.id);
     const albumsColl = collections.albums();

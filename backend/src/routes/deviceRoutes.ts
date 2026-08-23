@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { ObjectId } from 'mongodb';
 import { collections } from '../config/database.js';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
@@ -6,7 +6,7 @@ import { requireAuth, AuthRequest } from '../middleware/auth.js';
 const router = Router();
 
 // GET /api/v1/devices
-router.get('/', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.get('/', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userObjectId = new ObjectId(req.user!.id);
     const devicesColl = collections.devices();
@@ -38,7 +38,7 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response, next) => {
 });
 
 // POST /api/v1/devices/:id/revoke
-router.post('/:id/revoke', requireAuth, async (req: AuthRequest, res: Response, next) => {
+router.post('/:id/revoke', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userObjectId = new ObjectId(req.user!.id);
     const sessionsColl = collections.sessions();
