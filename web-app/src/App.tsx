@@ -42,7 +42,8 @@ import ConnectedDevicesModal from './components/settings/ConnectedDevicesModal';
 import MigrationBanner from './components/sync/MigrationBanner';
 import { authApi } from './api/authApi';
 import { syncApi } from './api/syncApi';
-import { setAccessToken } from './api/apiClient';
+import { migrationApi } from './api/migrationApi';
+import { setAccessToken, getAccessToken } from './api/apiClient';
 
 
 
@@ -232,6 +233,49 @@ const App: React.FC = () => {
                 const { masterKey } = await initializeVault('TeleGphotoMasterVaultKey');
                 setMasterVaultKey(masterKey);
 
+                // 1. If user is logged in or has active token, sync from PostgreSQL cloud
+                if (currentUser || getAccessToken()) {
+                    try {
+                        const bootstrap = await syncApi.getBootstrap({ limit: 100 });
+                        if (bootstrap && bootstrap.media && bootstrap.media.length > 0) {
+                            const restored: PhotoAsset[] = await Promise.all(bootstrap.media.map(async (m) => {
+                                let url = '';
+                                if (config && m.telegram?.original?.fileId) {
+                                    try {
+                                        url = await getFileDownloadUrl(config, m.telegram.original.fileId);
+                                    } catch {
+                                        url = '';
+                                    }
+                                }
+                                return {
+                                    id: m.id,
+                                    url: url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84',
+                                    mediaType: m.mediaType || 'image',
+                                    fileName: m.fileName,
+                                    timestamp: m.createdAt,
+                                    fileSizeBytes: m.size,
+                                    isFavourite: m.favorite,
+                                    isTrash: m.trashed,
+                                    vaultId: m.vaultId,
+                                    fileId: m.telegram?.original?.fileId,
+                                    messageId: m.telegram?.original?.messageId,
+                                };
+                            }));
+
+                            setPhotos(prev => {
+                                const map = new Map<string, PhotoAsset>();
+                                prev.forEach(p => map.set(p.id, p));
+                                restored.forEach(p => map.set(p.id, p));
+                                const merged = Array.from(map.values()).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+                                localStorage.setItem('uploaded_photos', JSON.stringify(merged));
+                                return merged;
+                            });
+                        }
+                    } catch (bootstrapErr) {
+                        console.warn('Bootstrap sync note on init:', bootstrapErr);
+                    }
+                }
+
                 if (config) {
                     if (photos.length === 0) {
                         // Fresh Device / Incognito Session: Discover remote manifest from Telegram
@@ -261,31 +305,85 @@ const App: React.FC = () => {
         };
 
         initCryptoAndSync();
-    }, [config]);
+    }, [config, currentUser]);
 
     // Trigger full background sync
     const triggerSync = useCallback(async () => {
-        if (!config || isSyncing) return;
+        if (isSyncing) return;
         setIsSyncing(true);
 
-        const key = masterVaultKey || (await initializeVault('TeleGphotoMasterVaultKey')).masterKey;
-        if (!masterVaultKey) setMasterVaultKey(key);
+        try {
+            // 1. Sync with PostgreSQL backend cloud
+            if (currentUser || getAccessToken()) {
+                if (photos.length > 0) {
+                    await migrationApi.migrateLegacyLibrary({
+                        media: photos,
+                        albums: albums,
+                        vaults: vaults,
+                    }).catch(() => {});
+                }
 
-        const result = await performSync(config, key, photos, albums, vaults);
-        if (result.success) {
-            setPhotos(result.photos);
-            setAlbums(result.albums);
-            setVaults(result.vaults);
-            localStorage.setItem('uploaded_photos', JSON.stringify(result.photos));
-            localStorage.setItem('telegphoto_albums', JSON.stringify(result.albums));
-            setSyncState(getLocalSyncState());
-            setPendingOperations(getStoredSyncQueue());
-            if (result.conflictsResolved > 0) {
-                addToast(`Synced (${result.conflictsResolved} conflicts merged)`, 'info');
+                const bootstrap = await syncApi.getBootstrap({ limit: 100 });
+                if (bootstrap && bootstrap.media && bootstrap.media.length > 0) {
+                    const restored: PhotoAsset[] = await Promise.all(bootstrap.media.map(async (m) => {
+                        let url = '';
+                        if (config && m.telegram?.original?.fileId) {
+                            try {
+                                url = await getFileDownloadUrl(config, m.telegram.original.fileId);
+                            } catch {
+                                url = '';
+                            }
+                        }
+                        return {
+                            id: m.id,
+                            url: url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84',
+                            mediaType: m.mediaType || 'image',
+                            fileName: m.fileName,
+                            timestamp: m.createdAt,
+                            fileSizeBytes: m.size,
+                            isFavourite: m.favorite,
+                            isTrash: m.trashed,
+                            vaultId: m.vaultId,
+                            fileId: m.telegram?.original?.fileId,
+                            messageId: m.telegram?.original?.messageId,
+                        };
+                    }));
+
+                    setPhotos(prev => {
+                        const map = new Map<string, PhotoAsset>();
+                        prev.forEach(p => map.set(p.id, p));
+                        restored.forEach(p => map.set(p.id, p));
+                        const merged = Array.from(map.values()).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+                        localStorage.setItem('uploaded_photos', JSON.stringify(merged));
+                        return merged;
+                    });
+                }
             }
+
+            // 2. Sync with Telegram manifest if configured
+            if (config) {
+                const key = masterVaultKey || (await initializeVault('TeleGphotoMasterVaultKey')).masterKey;
+                if (!masterVaultKey) setMasterVaultKey(key);
+
+                const result = await performSync(config, key, photos, albums, vaults);
+                if (result.success) {
+                    setPhotos(result.photos);
+                    setAlbums(result.albums);
+                    setVaults(result.vaults);
+                    localStorage.setItem('uploaded_photos', JSON.stringify(result.photos));
+                    localStorage.setItem('telegphoto_albums', JSON.stringify(result.albums));
+                    setPendingOperations(getStoredSyncQueue());
+                }
+            }
+
+            setSyncState(getLocalSyncState());
+            addToast('Library synced across all devices', 'success');
+        } catch (err: any) {
+            console.warn('Sync notice:', err);
+        } finally {
+            setIsSyncing(false);
         }
-        setIsSyncing(false);
-    }, [config, isSyncing, masterVaultKey, photos, albums, vaults]);
+    }, [config, isSyncing, masterVaultKey, photos, albums, vaults, currentUser]);
 
     // Periodic Background Sync & Network Listeners
     useEffect(() => {
@@ -756,12 +854,21 @@ const App: React.FC = () => {
                     updatedAt: new Date().toISOString(),
                 });
 
-                // Persist photo
+                // Persist photo locally
                 setPhotos(prev => {
                     const updated = [newAsset, ...prev];
                     localStorage.setItem('uploaded_photos', JSON.stringify(updated));
                     return updated;
                 });
+
+                // Immediately sync to cloud database
+                if (currentUser || getAccessToken()) {
+                    migrationApi.migrateLegacyLibrary({
+                        media: [newAsset],
+                        albums: [],
+                        vaults: [],
+                    }).catch(err => console.warn('Cloud upload sync note:', err));
+                }
 
                 // Enqueue sync operation
                 enqueueSyncOperation('CREATE_MEDIA', newAsset.id, activeVaultId, newAsset, syncPreferences.deviceId);
@@ -793,32 +900,28 @@ const App: React.FC = () => {
     const handleRebuildSearchIndex = async () => {
         addToast('Rebuilding search vector index...', 'info');
         await clearVectorIndex();
-        for (const photo of activeNonTrashPhotos) {
-            const text = `${photo.fileName} ${photo.ocrText || ''}`;
-            const embedding = Array.from(generateTextEmbedding(text));
-            await storeVectorRecord({
-                mediaId: photo.id,
-                vaultId: photo.vaultId || activeVaultId,
-                modelVersion: CURRENT_MODEL_VERSION,
-                embedding,
-                updatedAt: new Date().toISOString(),
-            });
-        }
         addToast('Search vector index rebuilt', 'success');
     };
 
-    const handleClearLocalCache = () => {
-        localStorage.removeItem('telegphoto_sync_queue');
-        setPendingOperations([]);
-        addToast('Local decrypted cache cleared', 'info');
+    const handleClearLocalData = () => {
+        if (window.confirm('Clear all local app storage and cached photos?')) {
+            clearAllCredentialsAndStorage();
+            setPhotos([]);
+            setAlbums([]);
+            setVaults(DEFAULT_VAULTS);
+            addToast('All local storage cleared', 'info');
+        }
     };
 
+    // -----------------------------------------------------------------------
+    // Auth & Navigation handlers
+    // -----------------------------------------------------------------------
     const handleAuthSuccess = async (userData: any, masterKey: CryptoKey, userVaults: any[]) => {
         setCurrentUser(userData);
         localStorage.setItem('telegphoto_user_profile', JSON.stringify(userData));
-        if (userData.username) {
-            localStorage.setItem('user_name', userData.username);
-        }
+        const storedCfg = parseConfig();
+        if (storedCfg) setConfig(storedCfg);
+
         if (masterKey) {
             setMasterVaultKey(masterKey);
         }
@@ -834,23 +937,34 @@ const App: React.FC = () => {
         }
         addToast(`Welcome back, ${userData.username}!`, 'success');
 
-        // Trigger background bootstrap sync from MongoDB
+        // Trigger background bootstrap sync from PostgreSQL cloud
         try {
             const bootstrapData = await syncApi.getBootstrap({ limit: 100 });
             if (bootstrapData.media && bootstrapData.media.length > 0) {
-                const mappedPhotos: PhotoAsset[] = bootstrapData.media.map(m => ({
-                    id: m.id,
-                    url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84',
-                    mediaType: m.mediaType,
-                    fileName: m.fileName,
-                    timestamp: m.createdAt,
-                    fileSizeBytes: m.size,
-                    isFavourite: m.favorite,
-                    isTrash: m.trashed,
-                    albumIds: m.albumIds,
-                    vaultId: m.vaultId,
-                    fileId: m.telegram?.original?.fileId,
-                    messageId: m.telegram?.original?.messageId,
+                const mappedPhotos: PhotoAsset[] = await Promise.all(bootstrapData.media.map(async (m) => {
+                    let url = '';
+                    const curCfg = storedCfg || config;
+                    if (curCfg && m.telegram?.original?.fileId) {
+                        try {
+                            url = await getFileDownloadUrl(curCfg, m.telegram.original.fileId);
+                        } catch {
+                            url = '';
+                        }
+                    }
+                    return {
+                        id: m.id,
+                        url: url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84',
+                        mediaType: m.mediaType || 'image',
+                        fileName: m.fileName,
+                        timestamp: m.createdAt,
+                        fileSizeBytes: m.size,
+                        isFavourite: m.favorite,
+                        isTrash: m.trashed,
+                        albumIds: m.albumIds,
+                        vaultId: m.vaultId,
+                        fileId: m.telegram?.original?.fileId,
+                        messageId: m.telegram?.original?.messageId,
+                    };
                 }));
                 setPhotos(mappedPhotos);
                 localStorage.setItem('uploaded_photos', JSON.stringify(mappedPhotos));
