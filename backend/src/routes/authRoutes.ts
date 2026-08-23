@@ -8,30 +8,30 @@ import { authRateLimiter } from '../middleware/rateLimit.js';
 const router = Router();
 
 const registerSchema = z.object({
-  username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9_-]+$/, 'Username must contain only letters, numbers, hyphens, and underscores'),
-  email: z.string().email(),
-  password: z.string().min(8, 'Password must be at least 8 characters long'),
+  username: z.string().min(2, 'Username must be at least 2 characters').max(64),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
   deviceName: z.string().optional(),
   deviceId: z.string().optional(),
   initialVault: z.object({
-    name: z.string().default('Personal Vault'),
-    encryptedVaultKey: z.string(),
-    wrappedWithRecovery: z.string().optional(),
-    salt: z.string(),
-    keyVersion: z.number().default(1),
+    name: z.string().optional(),
+    encryptedVaultKey: z.string().optional(),
+    wrappedWithRecovery: z.string().nullish(),
+    salt: z.string().optional(),
+    keyVersion: z.number().optional(),
   }).optional(),
 });
 
 const loginSchema = z.object({
-  usernameOrEmail: z.string().min(1),
-  password: z.string().min(1),
+  usernameOrEmail: z.string().min(1, 'Please provide username or email'),
+  password: z.string().min(1, 'Please provide your password'),
   deviceName: z.string().optional(),
   deviceId: z.string().optional(),
 });
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
-  newPassword: z.string().min(8),
+  newPassword: z.string().min(6),
   newEncryptedVaultKeys: z.array(
     z.object({
       vaultId: z.string(),

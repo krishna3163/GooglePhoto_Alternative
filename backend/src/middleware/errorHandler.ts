@@ -29,11 +29,12 @@ export function errorHandler(
 ): void {
   // Handle Zod validation errors
   if (err instanceof ZodError) {
+    const errorDetails = err.issues.map((i) => i.message).join(', ');
     res.status(400).json({
       success: false,
       error: {
         code: 'VALIDATION_ERROR',
-        message: 'Invalid request parameters',
+        message: errorDetails || 'Invalid request parameters',
         details: err.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),
       },
     });
@@ -59,7 +60,7 @@ export function errorHandler(
     success: false,
     error: {
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'An unexpected internal error occurred. Please try again.',
+      message: err?.message || 'An unexpected internal error occurred. Please try again.',
     },
   });
 }
