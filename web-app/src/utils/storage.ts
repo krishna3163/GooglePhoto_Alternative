@@ -50,3 +50,50 @@ export function hasCredentialsCookie(): boolean {
   if (typeof document === 'undefined') return false;
   return document.cookie.split(';').some(s => s.trim().startsWith(COOKIE_CONFIG_FLAG + '=1'));
 }
+
+const PIN_KEY = 'telegphoto_app_pin';
+const ENCRYPTION_KEY = 'telegphoto_master_enc_key';
+const VAULTS_KEY = 'telegphoto_vaults';
+
+export function getStoredPin(): string | null {
+  if (typeof localStorage === 'undefined') return null;
+  return localStorage.getItem(PIN_KEY);
+}
+
+export function setStoredPin(pin: string | null): void {
+  if (typeof localStorage === 'undefined') return;
+  if (pin) {
+    localStorage.setItem(PIN_KEY, pin);
+  } else {
+    localStorage.removeItem(PIN_KEY);
+  }
+}
+
+export function getStoredEncryptionKey(): string | null {
+  if (typeof localStorage === 'undefined') return null;
+  return localStorage.getItem(ENCRYPTION_KEY);
+}
+
+export function setStoredEncryptionKey(key: string | null): void {
+  if (typeof localStorage === 'undefined') return;
+  if (key) {
+    localStorage.setItem(ENCRYPTION_KEY, key);
+  } else {
+    localStorage.removeItem(ENCRYPTION_KEY);
+  }
+}
+
+export function getStoredVaults(): any[] {
+  if (typeof localStorage === 'undefined') return [];
+  const s = localStorage.getItem(VAULTS_KEY);
+  try {
+    return s ? JSON.parse(s) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function setStoredVaults(vaults: any[]): void {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem(VAULTS_KEY, JSON.stringify(vaults));
+}

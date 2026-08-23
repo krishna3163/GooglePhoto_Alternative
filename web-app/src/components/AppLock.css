@@ -1,0 +1,141 @@
+.app-lock-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, #111827 0%, #030712 100%);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.app-lock-card {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 28px;
+    padding: 36px 28px;
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+.lock-icon-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+}
+
+.app-lock-card h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0 0 6px 0;
+}
+
+.lock-subtext {
+    font-size: 13px;
+    color: #94a3b8;
+    margin: 0 0 24px 0;
+    line-height: 1.5;
+}
+
+.pin-dots {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.pin-dots .dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    transition: all 0.2s ease;
+}
+
+.pin-dots .dot.filled {
+    background: #8b5cf6;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
+    transform: scale(1.15);
+}
+
+.pin-dots.shake {
+    animation: shakeAnim 0.5s ease-in-out;
+}
+
+@keyframes shakeAnim {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+}
+
+.pin-error-msg {
+    color: #f87171;
+    font-size: 13px;
+    margin: -12px 0 16px 0;
+    font-weight: 500;
+}
+
+.numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    width: 100%;
+    max-width: 280px;
+    margin-bottom: 24px;
+}
+
+.numpad-btn {
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f1f5f9;
+    font-size: 22px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.numpad-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+}
+
+.numpad-btn:active {
+    transform: scale(0.95);
+}
+
+.numpad-btn.action-btn {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+}
+
+.lock-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #64748b;
+}

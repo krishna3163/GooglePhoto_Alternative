@@ -14,7 +14,8 @@ import InstallPrompt from './components/InstallPrompt';
 import { uploadFileToTelegram, getFileDownloadUrl, deleteTelegramMessage } from './services/telegramService';
 import { extractTextFromImage } from './services/ocrService';
 import type { TelegramConfig, PhotoAsset, UploadItem } from './types';
-import { getStoredConfig, getStoredUserName, getStoredPhotos, getStoredLayout, setStoredLayout, setCredentialsCookie } from './utils/storage';
+import AppLock from './components/AppLock';
+import { getStoredConfig, getStoredUserName, getStoredPhotos, getStoredLayout, setStoredLayout, setCredentialsCookie, getStoredPin } from './utils/storage';
 import type { LayoutMode } from './utils/storage';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
@@ -39,6 +40,8 @@ function parsePhotos(): PhotoAsset[] {
 
 const App: React.FC = () => {
   const [config, setConfig] = useState<TelegramConfig | null>(parseConfig);
+  const [storedPin] = useState<string | null>(getStoredPin);
+  const [isLocked, setIsLocked] = useState<boolean>(() => !!getStoredPin());
   const [showSettings, setShowSettings] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [showDevProfile, setShowDevProfile] = useState(false);
@@ -279,7 +282,9 @@ const App: React.FC = () => {
 
   return (
     <AnimatePresence mode="wait">
-      {loading ? (
+      {isLocked && storedPin ? (
+        <AppLock key="app-lock" storedPin={storedPin} onUnlock={() => setIsLocked(false)} />
+      ) : loading ? (
         <SplashLoader key="splash" />
       ) : (
         <motion.div

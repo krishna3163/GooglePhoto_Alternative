@@ -3,10 +3,10 @@
   <img src="https://raw.githubusercontent.com/maurodesouza/profile-readme-generator/master/src/assets/icons/social/telegram/default.svg" width="85" height="85" alt="TeleGphoto Logo" />
 
   # 📸 TeleGphoto
-  ### ☁️ Unlimited, Private & Free Google Photos Alternative
+  ### 🛡️ Privacy-First, Zero-Knowledge Personal Media Cloud
 
   <p align="center">
-    <b>Transform Telegram's unlimited cloud storage into your personal, beautiful, and secure photo & document gallery.</b>
+    <b>Transform your private Telegram channels into a secure, encrypted personal photo and document vault with zero subscription fees.</b>
   </p>
 
   <p align="center">
@@ -14,7 +14,7 @@
     <a href="https://github.com/krishna3163/GooglePhoto_Alternative/stargazers"><img src="https://img.shields.io/github/stars/krishna3163/GooglePhoto_Alternative?color=f59e0b&style=for-the-badge" alt="Stars" /></a>
     <a href="https://github.com/krishna3163/GooglePhoto_Alternative/network/members"><img src="https://img.shields.io/github/forks/krishna3163/GooglePhoto_Alternative?color=3b82f6&style=for-the-badge" alt="Forks" /></a>
     <a href="https://github.com/krishna3163/GooglePhoto_Alternative/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-10b981?style=for-the-badge" alt="License" /></a>
-    <img src="https://img.shields.io/badge/Storage-Unlimited_Free-06b6d4?style=for-the-badge" alt="Storage" />
+    <img src="https://img.shields.io/badge/Encryption-AES--256--GCM-06b6d4?style=for-the-badge" alt="Encryption" />
   </p>
 
   <br>
@@ -24,6 +24,7 @@
     <a href="#-telegphoto-vs-google-photos"><b>⚖️ Comparison</b></a> •
     <a href="#-key-features"><b>✨ Features</b></a> •
     <a href="#-installation--download"><b>📥 Download APK</b></a> •
+    <a href="#-visionary-feature-roadmap--master-plan"><b>🗺️ Roadmap</b></a> •
     <a href="#-frequently-asked-questions"><b>❓ FAQ</b></a>
   </p>
 
@@ -35,9 +36,9 @@
 
 ## 💡 Why TeleGphoto?
 
-Most commercial cloud storage services (like Google Photos, iCloud, Dropbox) enforce strict 15 GB limits and costly recurring subscriptions. 
+Commercial cloud storage services (like Google Photos, iCloud, Dropbox) enforce strict storage quotas and costly recurring subscriptions while training AI models on your personal photos.
 
-**TeleGphoto** solves this by leveraging **Telegram's infinite cloud infrastructure** as a decentralized, zero-cost backend. Your files are stored in your **own private Telegram channel**, ensuring 100% data ownership, zero tracking, and completely unlimited storage.
+**TeleGphoto** solves this by putting you in complete control: your media is encrypted client-side using **AES-256-GCM** and stored in your **own private Telegram channel vault**. Telegram's cloud serves as a high-capacity backend with zero third-party tracking, zero recurring subscription fees, and complete data ownership.
 
 <br>
 
@@ -45,11 +46,11 @@ Most commercial cloud storage services (like Google Photos, iCloud, Dropbox) enf
 
 | Feature | 📸 TeleGphoto | 🌐 Google Photos / Commercial Clouds |
 |---|:---:|:---:|
-| **Storage Capacity** | **♾️ Unlimited (Free Forever)** | ❌ 15 GB Free (Paid afterwards) |
-| **Subscription Cost** | **$0 / Month** | ❌ $20 – $120+ / Year |
-| **Privacy & Control** | **🛡️ 100% Client-Side Private Vault** | ❌ Scanned for Ads & AI Training |
-| **Max File Upload** | **⚡ Up to 2,000 MB (2 GB) per file** | ⚠️ Deducted from quota |
-| **Open Source** | **✅ 100% Free & Open Source (MIT)** | ❌ Closed Source Proprietary |
+| **Storage Model** | **🛡️ Decentralized Private Channel Vault** | ❌ 15 GB Quota (Paid subscriptions) |
+| **Subscription Cost** | **$0 / Month (Free & Open Source)** | ❌ $20 – $120+ / Year |
+| **Privacy & Security** | **🔒 Client-Side AES-256-GCM Encryption** | ❌ Corporate Scanning & Ads Targeting |
+| **Max File Upload** | **⚡ Up to 2,000 MB (2 GB) per file** | ⚠️ Deducted from total plan quota |
+| **Open Source** | **✅ 100% Transparent (MIT License)** | ❌ Proprietary Closed Source |
 | **OCR Smart Text Search** | **✅ Built-in Client-Side OCR** | ✅ Cloud OCR |
 | **PWA & Offline Mode** | **✅ Yes (Installable Web & Android APK)**| ✅ Native Apps |
 
