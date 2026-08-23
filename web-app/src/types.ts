@@ -56,6 +56,12 @@ export interface PhotoAsset {
     exif?: ExifData;
     pHash?: string;
     isEncrypted?: boolean;
+    encryptionMetadata?: {
+        v: number;
+        alg: 'AES-256-GCM';
+        iv: string;
+        salt?: string;
+    };
     location?: {
         name: string;
         lat?: number;
