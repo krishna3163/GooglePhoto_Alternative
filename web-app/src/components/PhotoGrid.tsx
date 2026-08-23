@@ -5,6 +5,7 @@ import { FileText, Play, Star, LayoutGrid, List } from 'lucide-react';
 import { motion } from 'framer-motion';
 import MemoriesBanner from './MemoriesBanner';
 import { generateMemories } from '../intelligence/memoryService';
+import { searchPhotosSemantically } from '../intelligence/semanticSearchService';
 import './PhotoGrid.css';
 
 interface PhotoGridProps {
@@ -31,10 +32,11 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ config, photos, searchQuery, titl
 
     const memories = useMemo(() => generateMemories(photos), [photos]);
 
-    const filteredPhotos = photos.filter(photo =>
-        photo.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (photo.ocrText && photo.ocrText.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    const filteredPhotos = useMemo(() => {
+        if (!searchQuery.trim()) return photos;
+        const searchResults = searchPhotosSemantically(photos, searchQuery);
+        return searchResults.map(r => r.photo);
+    }, [photos, searchQuery]);
 
     // Group photos by date
     const groupedPhotos = filteredPhotos.reduce((groups: { [key: string]: PhotoAsset[] }, photo) => {
