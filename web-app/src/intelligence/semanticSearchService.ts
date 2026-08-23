@@ -70,79 +70,90 @@ export function searchPhotosSemantically(
             continue;
         }
 
-        let score = 0;
+        let layer1Score = 0; // Deterministic lexical/OCR/metadata signals
+        let layer2Score = 0; // Semantic concept vector similarity
         const reasons: string[] = [];
 
-        // 1. Direct lexical filename and token matches
+        // -------------------------------------------------------------------
+        // LAYER 1: Deterministic Signals
+        // -------------------------------------------------------------------
+        // 1a. Direct lexical filename and token matches
         const lowerName = photo.fileName.toLowerCase();
         const queryTokens = trimmedQuery.split(/\s+/).filter(t => t.length > 2);
         
         if (lowerName.includes(trimmedQuery)) {
-            score += 0.85;
-            reasons.push('Filename match');
+            layer1Score += 0.90;
+            reasons.push('Layer 1: Exact filename match');
         } else {
             const tokenHits = queryTokens.filter(t => lowerName.includes(t));
             if (tokenHits.length > 0) {
-                score += 0.35 * tokenHits.length;
-                reasons.push('Filename keyword match');
+                layer1Score += 0.35 * tokenHits.length;
+                reasons.push(`Layer 1: Filename keyword match (${tokenHits.join(', ')})`);
             }
         }
 
-        // 2. Direct OCR match and token hits
+        // 1b. Direct OCR match and token hits
         if (photo.ocrText) {
             const lowerOcr = photo.ocrText.toLowerCase();
             if (lowerOcr.includes(trimmedQuery)) {
-                score += 0.90;
-                reasons.push('OCR text match');
+                layer1Score += 0.95;
+                reasons.push('Layer 1: Exact OCR text match');
             } else {
                 const ocrTokenHits = queryTokens.filter(t => lowerOcr.includes(t));
                 if (ocrTokenHits.length > 0) {
-                    score += 0.40 * ocrTokenHits.length;
-                    reasons.push(`OCR keyword match (${ocrTokenHits.join(', ')})`);
+                    layer1Score += 0.40 * ocrTokenHits.length;
+                    reasons.push(`Layer 1: OCR keyword match (${ocrTokenHits.join(', ')})`);
                 }
             }
         }
 
-        // 3. Location match
+        // 1c. Geolocation match
         if (photo.location?.name && photo.location.name.toLowerCase().includes(trimmedQuery)) {
-            score += 0.75;
-            reasons.push('Location match');
+            layer1Score += 0.80;
+            reasons.push('Layer 1: Geolocation match');
         }
 
-        // 4. Vector Cosine Similarity
+        // 1d. Smart category deterministic match
+        const categories = categorizePhoto(photo);
+        const matchedCats = categories.filter(c => trimmedQuery.includes(c) || queryTokens.includes(c));
+        if (matchedCats.length > 0) {
+            layer1Score += 0.45;
+            reasons.push(`Layer 1: Category tag (${matchedCats.join(', ')})`);
+        }
+
+        // 1e. Favorite slight relevance boost
+        if (photo.isFavourite) {
+            layer1Score += 0.05;
+        }
+
+        // -------------------------------------------------------------------
+        // LAYER 2: Semantic Concept Embeddings & Cosine Similarity
+        // -------------------------------------------------------------------
         const photoContext = buildPhotoSemanticContext(photo);
         const photoVector = generateTextEmbedding(photoContext);
         const similarity = cosineSimilarity(queryVector, photoVector);
 
         if (similarity > 0.05) {
-            score += similarity * 0.75;
-            if (similarity > 0.25) {
-                reasons.push(`Semantic concept similarity (${Math.round(similarity * 100)}%)`);
+            layer2Score = similarity * 0.85;
+            if (similarity > 0.20) {
+                reasons.push(`Layer 2: Concept similarity (${Math.round(similarity * 100)}%)`);
             }
         }
 
-        // 5. Smart category match
-        const categories = categorizePhoto(photo);
-        const matchedCats = categories.filter(c => trimmedQuery.includes(c) || queryTokens.includes(c));
-        if (matchedCats.length > 0) {
-            score += 0.45;
-            reasons.push(`Category match (${matchedCats.join(', ')})`);
-        }
+        // -------------------------------------------------------------------
+        // HYBRID RANKER COMBINATION
+        // -------------------------------------------------------------------
+        const totalScore = layer1Score + layer2Score;
 
-        // 6. Favorite slight relevance boost
-        if (photo.isFavourite) {
-            score += 0.05;
-        }
-
-        if (score >= threshold) {
+        if (totalScore >= threshold) {
             results.push({
                 photo,
-                score,
+                score: totalScore,
                 matchReasons: reasons.length > 0 ? reasons : ['General concept match'],
             });
         }
     }
 
-    // Sort descending by score
+    // Sort descending by total relevance score
     return results.sort((a, b) => b.score - a.score);
 }
