@@ -34,7 +34,7 @@ interface DetailsPanelProps {
     onCategoryClick?: (category: string) => void;
 }
 
-const DetailsPanel: React.FC<DetailsPanelProps> = ({
+export const DetailsPanel: React.FC<DetailsPanelProps> = ({
     photo,
     vaultName,
     onClose,

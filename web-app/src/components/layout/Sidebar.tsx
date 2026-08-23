@@ -55,7 +55,7 @@ const TeleGphotoLogoIcon = () => (
     </svg>
 );
 
-const Sidebar: React.FC<SidebarProps> = ({
+export const Sidebar: React.FC<SidebarProps> = ({
     activeTab,
     setActiveTab,
     activeVaultId,

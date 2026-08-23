@@ -20,7 +20,7 @@ interface MediaEditorModalProps {
 
 type EditorTab = 'details' | 'adjust' | 'crop' | 'rotate';
 
-const MediaEditorModal: React.FC<MediaEditorModalProps> = ({
+export const MediaEditorModal: React.FC<MediaEditorModalProps> = ({
     photo,
     isOpen,
     onClose,

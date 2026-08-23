@@ -9,7 +9,7 @@ interface SecurityPrivacyModalProps {
     activeVaultName: string;
 }
 
-const SecurityPrivacyModal: React.FC<SecurityPrivacyModalProps> = ({
+export const SecurityPrivacyModal: React.FC<SecurityPrivacyModalProps> = ({
     isOpen,
     onClose,
     activeVaultName,

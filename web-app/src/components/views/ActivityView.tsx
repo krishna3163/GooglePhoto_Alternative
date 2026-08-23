@@ -14,7 +14,7 @@ interface ActivityViewProps {
     activities: ActivityEvent[];
 }
 
-const ActivityView: React.FC<ActivityViewProps> = ({ activities }) => {
+export const ActivityView: React.FC<ActivityViewProps> = ({ activities }) => {
     const getIcon = (type: ActivityEvent['type']) => {
         switch (type) {
             case 'upload': return <UploadCloud size={17} color="#FFC928" />;

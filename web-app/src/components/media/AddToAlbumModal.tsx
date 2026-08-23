@@ -14,7 +14,7 @@ interface AddToAlbumModalProps {
     onCreateAlbumAndAdd: (name: string, photoIds: string[]) => void;
 }
 
-const AddToAlbumModal: React.FC<AddToAlbumModalProps> = ({
+export const AddToAlbumModal: React.FC<AddToAlbumModalProps> = ({
     photoId,
     photoIds,
     albums,

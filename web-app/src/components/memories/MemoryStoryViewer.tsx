@@ -12,7 +12,7 @@ interface MemoryStoryViewerProps {
     onHideMemory?: (memoryId: string) => void;
 }
 
-const MemoryStoryViewer: React.FC<MemoryStoryViewerProps> = ({
+export const MemoryStoryViewer: React.FC<MemoryStoryViewerProps> = ({
     memory,
     onClose,
     onPhotoClick,

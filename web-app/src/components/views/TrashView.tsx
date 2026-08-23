@@ -10,7 +10,7 @@ interface TrashViewProps {
     onEmptyTrash: () => void;
 }
 
-const TrashView: React.FC<TrashViewProps> = ({
+export const TrashView: React.FC<TrashViewProps> = ({
     trashedPhotos,
     onRestorePhoto,
     onPermanentDeletePhoto,

@@ -10,7 +10,7 @@ interface MemoriesBannerProps {
     onViewAllMemories: () => void;
 }
 
-const MemoriesBanner: React.FC<MemoriesBannerProps> = ({
+export const MemoriesBanner: React.FC<MemoriesBannerProps> = ({
     memories,
     onOpenMemoryStory,
     onViewAllMemories,

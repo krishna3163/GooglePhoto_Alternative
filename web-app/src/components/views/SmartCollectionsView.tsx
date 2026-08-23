@@ -13,7 +13,7 @@ interface SmartCollectionsViewProps {
     onToggleFavorite: (id: string, e: React.MouseEvent) => void;
 }
 
-const SmartCollectionsView: React.FC<SmartCollectionsViewProps> = ({
+export const SmartCollectionsView: React.FC<SmartCollectionsViewProps> = ({
     photos,
     onPhotoClick,
     onToggleFavorite,

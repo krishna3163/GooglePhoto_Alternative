@@ -20,7 +20,7 @@ interface BulkActionBarProps {
     onTrashAll: () => void;
 }
 
-const BulkActionBar: React.FC<BulkActionBarProps> = ({
+export const BulkActionBar: React.FC<BulkActionBarProps> = ({
     selectedCount,
     onClearSelection,
     onFavoriteAll,

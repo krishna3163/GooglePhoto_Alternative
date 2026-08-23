@@ -15,7 +15,7 @@ interface StorageAnalyticsModalProps {
     onEmptyTrash: () => void;
 }
 
-const StorageAnalyticsModal: React.FC<StorageAnalyticsModalProps> = ({
+export const StorageAnalyticsModal: React.FC<StorageAnalyticsModalProps> = ({
     isOpen,
     onClose,
     usedBytes,

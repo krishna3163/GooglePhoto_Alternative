@@ -15,7 +15,7 @@ interface ToastProps {
     onDismiss: (id: string) => void;
 }
 
-const ToastContainer: React.FC<ToastProps> = ({ toasts, onDismiss }) => {
+export const ToastContainer: React.FC<ToastProps> = ({ toasts, onDismiss }) => {
     return (
         <div className="toast-container">
             <AnimatePresence>

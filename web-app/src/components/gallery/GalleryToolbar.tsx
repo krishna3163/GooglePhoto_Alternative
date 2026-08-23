@@ -27,7 +27,7 @@ interface GalleryToolbarProps {
     onJumpToDate?: (date: string) => void;
 }
 
-const GalleryToolbar: React.FC<GalleryToolbarProps> = ({
+export const GalleryToolbar: React.FC<GalleryToolbarProps> = ({
     dateLabel,
     totalCount,
     viewMode,

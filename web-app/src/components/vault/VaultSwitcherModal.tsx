@@ -9,7 +9,7 @@ interface VaultSwitcherModalProps {
     onCreateVault: (vault: { name: string; type: 'photos' | 'videos' | 'documents' | 'family'; description?: string }) => void;
 }
 
-const VaultSwitcherModal: React.FC<VaultSwitcherModalProps> = ({
+export const VaultSwitcherModal: React.FC<VaultSwitcherModalProps> = ({
     isOpen,
     onClose,
     onCreateVault,

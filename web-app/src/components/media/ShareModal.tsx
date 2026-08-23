@@ -11,7 +11,7 @@ interface ShareModalProps {
     onDownloadDecrypted: (photo: PhotoAsset) => void;
 }
 
-const ShareModal: React.FC<ShareModalProps> = ({
+export const ShareModal: React.FC<ShareModalProps> = ({
     photo,
     isOpen,
     onClose,

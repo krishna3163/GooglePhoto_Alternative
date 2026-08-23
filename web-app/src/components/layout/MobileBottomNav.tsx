@@ -8,7 +8,7 @@ interface MobileBottomNavProps {
     onUploadClick: () => void;
 }
 
-const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
+export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     activeTab,
     onTabChange,
     onUploadClick,

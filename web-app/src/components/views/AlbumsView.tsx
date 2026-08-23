@@ -14,7 +14,7 @@ interface AlbumsViewProps {
     onToggleFavorite: (id: string, e: React.MouseEvent) => void;
 }
 
-const AlbumsView: React.FC<AlbumsViewProps> = ({
+export const AlbumsView: React.FC<AlbumsViewProps> = ({
     albums,
     photos,
     onCreateAlbum,

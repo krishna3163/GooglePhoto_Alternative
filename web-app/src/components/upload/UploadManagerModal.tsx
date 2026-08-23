@@ -24,7 +24,7 @@ interface UploadManagerModalProps {
     onClearCompleted: () => void;
 }
 
-const UploadManagerModal: React.FC<UploadManagerModalProps> = ({
+export const UploadManagerModal: React.FC<UploadManagerModalProps> = ({
     isOpen,
     onClose,
     queue,

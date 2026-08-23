@@ -45,7 +45,7 @@ interface TopBarProps {
     searchInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
-const TopBar: React.FC<TopBarProps> = ({
+export const TopBar: React.FC<TopBarProps> = ({
     searchQuery,
     onSearchChange,
     filters,
