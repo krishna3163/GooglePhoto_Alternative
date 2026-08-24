@@ -802,7 +802,36 @@ const App: React.FC = () => {
                 let fileId = `file-${Date.now()}`;
                 let messageId: number | undefined;
 
-                if (config) {
+                if (getAccessToken()) {
+                    // Upload via Backend API
+                    const formData = new FormData();
+                    formData.append('file', item.file);
+                    formData.append('metadata', JSON.stringify({
+                        fileName: item.file.name,
+                        mimeType: item.file.type,
+                        mediaType: item.file.type.startsWith('image/') ? 'image' : item.file.type.startsWith('video/') ? 'video' : 'document',
+                        vaultId: activeVaultId,
+                    }));
+
+                    const apiBase = (import.meta as any).env?.VITE_API_BASE_URL || 'https://telegphoto-backend.onrender.com/api/v1';
+                    
+                    const res = await fetch(`${apiBase}/media/upload`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${getAccessToken()}`
+                        },
+                        body: formData
+                    });
+
+                    if (!res.ok) {
+                        throw new Error('Backend upload failed: ' + await res.text());
+                    }
+
+                    const data = await res.json();
+                    fileId = data.data.id;
+                    downloadUrl = `${apiBase}/media/${fileId}/download?token=${getAccessToken()}`;
+                } else if (config) {
+                    // Fallback to legacy local upload (Not recommended)
                     const isImage = item.file.type.startsWith('image/');
                     const isVideo = item.file.type.startsWith('video/');
                     const mediaType = isImage ? 'image' : isVideo ? 'video' : 'document';
@@ -854,15 +883,6 @@ const App: React.FC = () => {
                     localStorage.setItem('uploaded_photos', JSON.stringify(updated));
                     return updated;
                 });
-
-                // Immediately sync to cloud database
-                if (currentUser || getAccessToken()) {
-                    migrationApi.migrateLegacyLibrary({
-                        media: [newAsset],
-                        albums: [],
-                        vaults: [],
-                    }).catch(err => console.warn('Cloud upload sync note:', err));
-                }
 
                 // Enqueue sync operation
                 enqueueSyncOperation('CREATE_MEDIA', newAsset.id, activeVaultId, newAsset, syncPreferences.deviceId);
