@@ -129,11 +129,11 @@ export async function decryptManifest(
  */
 export function manifestMediaToPhotoAssets(
     mediaItems: ManifestMediaItem[],
-    telegramDownloadUrlResolver?: (fileId: string) => string
+    telegramDownloadUrlResolver?: (fileId: string, id?: string) => string
 ): PhotoAsset[] {
     return mediaItems.map(m => ({
         id: m.id,
-        url: telegramDownloadUrlResolver ? telegramDownloadUrlResolver(m.telegram.original.fileId) : '',
+        url: telegramDownloadUrlResolver ? telegramDownloadUrlResolver(m.telegram.original.fileId, m.id) : '',
         mediaType: m.mimeType.startsWith('video/') ? 'video' : m.mimeType.startsWith('application/pdf') ? 'document' : 'image',
         fileName: m.fileName,
         timestamp: m.createdAt,

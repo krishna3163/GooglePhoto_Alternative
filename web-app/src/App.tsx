@@ -239,17 +239,11 @@ const App: React.FC = () => {
                         const bootstrap = await syncApi.getBootstrap({ limit: 100 });
                         if (bootstrap && bootstrap.media && bootstrap.media.length > 0) {
                             const restored: PhotoAsset[] = await Promise.all(bootstrap.media.map(async (m) => {
-                                let url = '';
-                                if (config && m.telegram?.original?.fileId) {
-                                    try {
-                                        url = await getFileDownloadUrl(config, m.telegram.original.fileId);
-                                    } catch {
-                                        url = '';
-                                    }
-                                }
+                                const url = `${(import.meta as any).env?.VITE_API_BASE_URL || 'https://telegphoto-backend.onrender.com/api/v1'}/media/${m.id}/download?token=${getAccessToken() || ''}`;
+                                
                                 return {
                                     id: m.id,
-                                    url: url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84',
+                                    url: url,
                                     mediaType: m.mediaType || 'image',
                                     fileName: m.fileName,
                                     timestamp: m.createdAt,

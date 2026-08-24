@@ -147,7 +147,15 @@ export async function performSync(
         clearCompletedOperations();
 
         // 4. Transform manifest back to PhotoAsset runtime objects
-        const urlResolver = (fileId: string) => {
+        const urlResolver = (fileId: string, mId?: string) => {
+            const apiBase = (import.meta as any).env?.VITE_API_BASE_URL || 'https://telegphoto-backend.onrender.com/api/v1';
+            let token = '';
+            if (typeof sessionStorage !== 'undefined') {
+                token = sessionStorage.getItem('telegphoto_access_token') || '';
+            }
+            if (mId) {
+                return `${apiBase}/media/${mId}/download?token=${token}`;
+            }
             return `https://api.telegram.org/file/bot${config.token}/mock_path_${fileId}`;
         };
         const syncedPhotos = manifestMediaToPhotoAssets(finalManifest.media, urlResolver);
@@ -219,9 +227,19 @@ export async function performInitialOnboardingSync(
     const manifest = await decryptManifest(remoteRes.blob, masterVaultKey, remoteRes.metadata);
     const total = manifest.media.length;
 
-    const photos = manifestMediaToPhotoAssets(manifest.media, (fileId) => {
+    const photos = manifestMediaToPhotoAssets(manifest.media, (fileId, mId) => {
         const demoMatch = DEMO_PHOTOS.find(d => d.id === fileId || d.fileName.includes(fileId));
         if (demoMatch) return demoMatch.url;
+        
+        const apiBase = (import.meta as any).env?.VITE_API_BASE_URL || 'https://telegphoto-backend.onrender.com/api/v1';
+        let token = '';
+        if (typeof sessionStorage !== 'undefined') {
+            token = sessionStorage.getItem('telegphoto_access_token') || '';
+        }
+        if (mId) {
+            return `${apiBase}/media/${mId}/download?token=${token}`;
+        }
+        
         if (isMockConfig(config) || fileId.startsWith('demo-') || fileId.startsWith('mock_')) {
             return `https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=84`;
         }
