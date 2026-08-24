@@ -106,6 +106,16 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({
 
             {/* Media Preview Card */}
             <div className="details-preview-container" onClick={() => onOpenFullscreen(photo)}>
+                <button 
+                    className="details-preview-close-btn" 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onClose();
+                    }} 
+                    title="Close details"
+                >
+                    <X size={18} />
+                </button>
                 {photo.mediaType === 'video' ? (
                     <video src={photo.url} className="details-preview-media" muted />
                 ) : photo.mediaType === 'document' ? (
