@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import { env } from '../config/env.js';
 
 export interface AppErrorPayload {
   code: string;
@@ -54,13 +55,18 @@ export function errorHandler(
     return;
   }
 
-  // Generic fallback without leaking stack traces or credentials
+  // Generic fallback without leaking stack traces or internal secrets
   console.error('Unhandled Server Error:', err?.message || err);
+  const safeMessage =
+    env.NODE_ENV === 'production'
+      ? 'An unexpected internal error occurred. Please try again.'
+      : err?.message || 'An unexpected internal error occurred.';
+
   res.status(500).json({
     success: false,
     error: {
       code: 'INTERNAL_SERVER_ERROR',
-      message: err?.message || 'An unexpected internal error occurred. Please try again.',
+      message: safeMessage,
     },
   });
 }

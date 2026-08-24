@@ -121,7 +121,7 @@ const App: React.FC = () => {
     const [photos, setPhotos] = useState<PhotoAsset[]>(parsePhotos);
     const [isLocked, setIsLocked] = useState<boolean>(() => !!getStoredPinData());
     const [loading, setLoading] = useState(true);
-    const [userName] = useState(() => currentUser?.username || getStoredUserName() || 'Krishna');
+    const [userName] = useState(() => currentUser?.username || getStoredUserName() || '');
     const userIdentity = useMemo(() => deriveUserIdentity(config?.chatId || currentUser?.id || 'guest', userName), [config?.chatId, currentUser?.id, userName]);
 
 
@@ -973,7 +973,9 @@ const App: React.FC = () => {
     const handleSignOut = async () => {
         try {
             await authApi.logout();
-        } catch {}
+        } catch (_err) {
+            // Soft fail on network error during signout
+        }
         clearAllCredentialsAndStorage();
         clearActiveSession();
         setAccessToken(null);

@@ -1,5 +1,6 @@
 import { Router, Response, NextFunction } from 'express';
 import { z } from 'zod';
+import { env } from '../config/env.js';
 import { queryPg } from '../config/database.js';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { validateRequest } from '../middleware/validation.js';
@@ -41,12 +42,28 @@ router.post(
 // GET /api/v1/telegram/status
 router.get('/status', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const token = env.TELEGRAM_BOT_TOKEN;
+    const defaultChatId = env.TELEGRAM_DEFAULT_CHAT_ID;
+
+    if (!token) {
+      res.json({
+        success: true,
+        data: {
+          isConnected: false,
+          botUsername: null,
+          chatId: null,
+        },
+      });
+      return;
+    }
+
+    const botInfo = await TelegramStorageService.validateBotToken(token);
     res.json({
       success: true,
       data: {
         isConnected: true,
-        botUsername: 'TeleGphotoBot',
-        chatId: 'connected',
+        botUsername: botInfo.username,
+        chatId: defaultChatId || 'configured',
       },
     });
   } catch (err) {

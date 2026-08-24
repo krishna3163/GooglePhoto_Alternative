@@ -36,11 +36,14 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response, next: Next
     }
 
     const albumId = id || crypto.randomUUID();
+    const vaultRes = await queryPg('SELECT id FROM vaults WHERE user_id = $1 LIMIT 1', [req.user!.id]);
+    const targetVaultId = (vaultId && vaultRes.rows.some((v: any) => v.id === vaultId)) ? vaultId : (vaultRes.rows[0]?.id || null);
+
     const insertRes = await queryPg(
       `INSERT INTO albums (id, user_id, vault_id, name, description, cover_media_id)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [albumId, req.user!.id, vaultId || 'default', name.trim(), description || null, coverMediaId || null]
+      [albumId, req.user!.id, targetVaultId, name.trim(), description || null, coverMediaId || null]
     );
 
     const doc = insertRes.rows[0];

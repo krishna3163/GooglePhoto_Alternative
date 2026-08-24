@@ -1,4 +1,5 @@
 import { queryPg } from '../config/database.js';
+import { env } from '../config/env.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { TelegramStorageService } from './telegramStorage.js';
 
@@ -36,7 +37,10 @@ export class MediaService {
       return existing.rows[0];
     }
 
-    const chatId = 'mock_chat_id';
+    const chatId = env.TELEGRAM_DEFAULT_CHAT_ID || (env.NODE_ENV === 'test' || env.NODE_ENV === 'development' ? 'mock_chat_id' : '');
+    if (!chatId) {
+      throw new AppError(500, 'TELEGRAM_CHAT_ID_MISSING', 'Telegram default chat ID is not configured');
+    }
 
     // 2. Upload to Telegram
     const mainUpload = await TelegramStorageService.uploadEncryptedMedia(
@@ -54,11 +58,23 @@ export class MediaService {
       );
     }
 
-    // 3. Ensure Vault exists for user
-    let vaultId = input.vaultId;
-    const vaultCheck = await queryPg('SELECT id FROM vaults WHERE user_id = $1 LIMIT 1', [userId]);
-    if (vaultCheck.rows.length > 0) {
-      vaultId = vaultCheck.rows[0].id;
+    // 3. Ensure target vault belongs to user
+    let targetVaultId = input.vaultId;
+    const userVaults = await queryPg('SELECT id FROM vaults WHERE user_id = $1 ORDER BY created_at ASC', [userId]);
+    const matchingVault = userVaults.rows.find((v) => v.id === input.vaultId);
+
+    if (matchingVault) {
+      targetVaultId = matchingVault.id;
+    } else if (userVaults.rows.length > 0) {
+      targetVaultId = userVaults.rows[0].id;
+    } else {
+      const newVaultRes = await queryPg(
+        `INSERT INTO vaults (user_id, name, encrypted_vault_key, salt)
+         VALUES ($1, 'Personal Vault', 'default_key', 'default_salt')
+         RETURNING id`,
+        [userId]
+      );
+      targetVaultId = newVaultRes.rows[0].id;
     }
 
     // 4. Insert into PostgreSQL media table
@@ -72,7 +88,7 @@ export class MediaService {
       [
         input.id,
         userId,
-        vaultId || 'default',
+        targetVaultId,
         input.fileName,
         input.mimeType,
         input.mediaType,
@@ -93,7 +109,7 @@ export class MediaService {
     await queryPg(
       `INSERT INTO sync_events (user_id, entity_type, entity_id, operation, sync_version, payload)
        VALUES ($1, 'media', $2, 'CREATE', (SELECT COALESCE(MAX(sync_version), 0) + 1 FROM sync_events WHERE user_id = $1), $3)`,
-      [userId, input.id, JSON.stringify({ fileName: input.fileName, favorite: !!input.favorite })]
+      [userId, input.id, JSON.stringify({ fileName: input.fileName, favorite: !!input.favorite, vaultId: targetVaultId })]
     );
 
     const row = mediaRes.rows[0];
@@ -120,6 +136,10 @@ export class MediaService {
     const params: any[] = [userId, options.trashed === true];
     let query = 'SELECT * FROM media WHERE user_id = $1 AND is_deleted = $2';
 
+    if (options.vaultId) {
+      params.push(options.vaultId);
+      query += ` AND vault_id = $${params.length}`;
+    }
     if (options.favorite === true) {
       query += ' AND is_favorite = TRUE';
     }

@@ -125,8 +125,8 @@ router.get('/:id/thumbnail', requireAuth, async (req: AuthRequest, res: Response
   }
 });
 
-// POST /api/v1/media/:id/favorite
-router.post('/:id/favorite', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
+// POST or PATCH /api/v1/media/:id/favorite
+router.all('/:id/favorite', requireAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const isFav = await MediaService.toggleFavorite(req.user!.id, req.params.id, req.body?.favorite);
     res.json({ success: true, data: { favorite: isFav } });

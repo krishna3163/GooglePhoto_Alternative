@@ -14,10 +14,13 @@ export class TelegramStorageService {
    * Resolve active bot token (user-provided or server-level master bot token).
    */
   private static getBotToken(customToken?: string): string {
+    const isProd = process.env.NODE_ENV === 'production' || env.NODE_ENV === 'production';
     const token = customToken || env.TELEGRAM_BOT_TOKEN;
     if (!token) {
-      // Mock / Offline mode fallback for development without real telegram bot
-      return 'mock_bot_token';
+      if (!isProd) {
+        return 'mock_bot_token';
+      }
+      throw new AppError(500, 'TELEGRAM_CONFIG_MISSING', 'Telegram bot token is not configured in production');
     }
     return token;
   }
@@ -31,10 +34,13 @@ export class TelegramStorageService {
     chatId: string,
     customBotToken?: string
   ): Promise<TelegramUploadResult> {
+    const isProd = process.env.NODE_ENV === 'production' || env.NODE_ENV === 'production';
     const token = this.getBotToken(customBotToken);
 
-    // Mock environment support for testing and sandbox
     if (token.startsWith('mock_') || token.startsWith('demo_')) {
+      if (isProd) {
+        throw new AppError(500, 'INVALID_PRODUCTION_STORAGE', 'Mock Telegram storage cannot be used in production environment');
+      }
       const mockMsgId = Math.floor(Math.random() * 900000) + 100000;
       return {
         chatId: chatId || 'mock_chat_id',

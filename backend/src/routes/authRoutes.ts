@@ -104,8 +104,8 @@ router.post(
   }
 );
 
-// POST /api/v1/auth/refresh
-router.post('/refresh', async (req, res: Response, next: NextFunction) => {
+// POST /api/v1/auth/refresh and /api/v1/auth/refresh-token
+router.post(['/refresh', '/refresh-token'], async (req, res: Response, next: NextFunction) => {
   try {
     const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
     if (!refreshToken) {

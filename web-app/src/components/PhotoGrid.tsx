@@ -19,6 +19,14 @@ interface PhotoGridProps {
 }
 
 const PhotoGrid: React.FC<PhotoGridProps> = ({ config, photos, searchQuery, title, onPhotoClick, layoutMode = 'grid', onLayoutChange }) => {
+    const memories = useMemo(() => generateMemories(photos), [photos]);
+
+    const filteredPhotos = useMemo(() => {
+        if (!searchQuery.trim()) return photos;
+        const searchResults = searchPhotosSemantically(photos, searchQuery);
+        return searchResults.map(r => r.photo);
+    }, [photos, searchQuery]);
+
     if (!config) {
         return (
             <div className="empty-state">
@@ -29,14 +37,6 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ config, photos, searchQuery, titl
             </div>
         );
     }
-
-    const memories = useMemo(() => generateMemories(photos), [photos]);
-
-    const filteredPhotos = useMemo(() => {
-        if (!searchQuery.trim()) return photos;
-        const searchResults = searchPhotosSemantically(photos, searchQuery);
-        return searchResults.map(r => r.photo);
-    }, [photos, searchQuery]);
 
     // Group photos by date
     const groupedPhotos = filteredPhotos.reduce((groups: { [key: string]: PhotoAsset[] }, photo) => {

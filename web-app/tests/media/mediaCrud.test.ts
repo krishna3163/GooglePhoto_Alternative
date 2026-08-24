@@ -128,7 +128,7 @@ describe('Media & Album CRUD Integrity Suite', () => {
     });
 
     it('7. ALBUM SAFETY: Deleting an Album DOES NOT delete the underlying photos', () => {
-        let photos = [...initialPhotos];
+        const photos = [...initialPhotos];
         let albums: Album[] = [
             {
                 id: 'album-1',
